@@ -25,7 +25,7 @@ app.logger.info("  S E R V I C E   R U N N I N G  ".center(70, "*"))
 app.logger.info(70 * "*")
 
 try:
-    routes.init_db()  # make our SQLAlchemy tables
+    models.init_db(app)  # make our SQLAlchemy tables
 except Exception as error:
     app.logger.critical("%s: Cannot continue", error)
     # gunicorn requires exit code 4 to stop spawning workers when they die

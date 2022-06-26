@@ -39,6 +39,7 @@ class TestInventoryServer(TestCase):
     @classmethod
     def tearDownClass(cls):
         """ This runs once after the entire test suite """
+        
         pass
 
     def setUp(self):

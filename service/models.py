@@ -12,6 +12,9 @@ logger = logging.getLogger("flask.app")
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
 
+def init_db(app):
+    """Initialize the SQLAlchemy app"""
+    Inventory.init_db(app)
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
@@ -42,7 +45,7 @@ class PersistentBase:
 
     def create(self):
         """
-        Creates a Inventory to the database
+        Creates a record to the database
         """
         logger.info("Creating %s", self.name)
         self.id = None  # id must be none to generate next primary key
@@ -51,13 +54,13 @@ class PersistentBase:
 
     def update(self):
         """
-        Updates a inventory to the database
+        Updates a record to the database
         """
         logger.info("Updating %s", self.name)
         db.session.commit()
 
     def delete(self):
-        """Removes a inventory from the data store"""
+        """Removes a record from the data store"""
         logger.info("Deleting %s", self.name)
         db.session.delete(self)
         db.session.commit()
@@ -87,7 +90,7 @@ class PersistentBase:
 
 class Product(db.Model, PersistentBase):
     """
-    Class that represents a Inventory
+    Class that represents a Product
 
     Provide a one-to-many relationship between an inventory and its condition, 
     restock level and number.
@@ -120,7 +123,7 @@ class Product(db.Model, PersistentBase):
     #     )
  
     def serialize(self) -> dict:
-        """ Serializes a Inventory into a dictionary """
+        """ Serializes a Product into a dictionary """
         return {
             "id": self.id, 
             "condition": self.condition,
@@ -159,22 +162,6 @@ class Product(db.Model, PersistentBase):
         # CLASS METHODS
     ##################################################
 
-
-    # @classmethod
-    # def init_db(cls, app):
-    #     """ Initializes the database session """
-    #     logger.Product("Initializing database")
-    #     cls.app = app
-    #     # This is where we initialize SQLAlchemy from the Flask app
-    #     db.init_app(app)
-    #     app.app_context().push()
-    #     db.create_all()  # make our sqlalchemy tables
-
-    # @classmethod
-    # def find(cls, by_id):
-    #     """ Finds a Inventory by it's ID """
-    #     logger.Product("Processing lookup for id %s ...", by_id)
-    #     return cls.query.get(by_id)
 
     @classmethod
     def find_by_condition(cls, condition: Enum) -> list:
@@ -288,10 +275,10 @@ class Inventory(db.Model, PersistentBase):
 
     @classmethod
     def find_by_name(cls, name):
-        """Returns all Inventorys with the given name
+        """Returns all Inventories with the given name
 
         Args:
-            name (string): the name of the Inventorys you want to match
+            name (string): the name of the Inventories you want to match
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
