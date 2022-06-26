@@ -60,16 +60,18 @@ tests/              - test cases package
 
 ### Database model
 
-![Database model][/images/database_model.jpg]
+![Database model](/images/database_model.jpg)
 
-                         Persistent Base, SQLAlchemy
-                            /              \
-Product(db.model, Persistent Base)           Inventory(db.Model, Persistent Base) 
 
+```text
+                          Persistent Base, SQLAlchemy
+                                  /           \
+  Product(db.model, Persistent Base)           Inventory(db.Model, Persistent Base) 
+```
 ### APIs
 
-This is the documentation[1] for the database models
-[1]:/images/models.html
+This is the [documentation](/images/models.html) for the database models. It's located in the images folder. Please open it in a browser.
+
 
 
 ## License
