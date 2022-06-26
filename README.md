@@ -74,6 +74,8 @@ This is the [documentation](/images/models.html) for the database models. It's l
 ![database doc](/images/doc.jpg)
 
 
+Reference of design: https://github.com/nyu-devops/sample-accounts
+
 ## License
 Copyright (c) John Rofrano. All rights reserved.
 
