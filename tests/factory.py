@@ -45,5 +45,6 @@ class InventoryFactory(factory.Factory):
 
     id = factory.Sequence(lambda n: n)
     name = factory.Faker("first_name")
+    
     products = factory.RelatedFactoryList(ProductFactory, 
     factory_related_name='inventory_id', size=lambda: random.randint(1, 5))
