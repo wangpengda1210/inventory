@@ -55,8 +55,24 @@ tests/              - test cases package
 └── test_routes.py  - test suite for service routes
 ```
 
-## License
 
+## Database model and its APIs
+
+### Database model
+
+![Database model][/images/database_model.jpg]
+
+                         Persistent Base, SQLAlchemy
+                            /              \
+Product(db.model, Persistent Base)           Inventory(db.Model, Persistent Base) 
+
+### APIs
+
+This is the documentation[1] for the database models
+[1]:/images/models.html
+
+
+## License
 Copyright (c) John Rofrano. All rights reserved.
 
 Licensed under the Apache License. See [LICENSE](LICENSE)
