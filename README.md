@@ -71,7 +71,7 @@ tests/              - test cases package
 ### APIs
 
 This is the [documentation](/images/models.html) for the database models. It's located in the images folder. Please open it in a browser.
-
+![database doc](/images/doc.jpg)
 
 
 ## License
