@@ -275,6 +275,12 @@ class Inventory(db.Model, PersistentBase):
         return self
 
     def create_product(self, data):
+        """
+        Create an Inventory item from a dictionary
+
+        Args:
+            data (dict): A dictionary containing the resource data
+        """
         product = Product()
         product.deserialize(data)
         self.products.append(product)

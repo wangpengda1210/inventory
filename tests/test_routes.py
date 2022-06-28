@@ -103,12 +103,10 @@ class TestInventoryServer(TestCase):
         data = resp.get_json()
         self.assertEqual(data, [],"wrong response")
         # when there is 5 inventories, return 5 inventories
-        self._create_inventories(5)
+        requests_json = self._generate_inventories_with_products(5,2)
         resp = self.client.get(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.get_json()
-        self.assertEqual(len(data), 5)
-
+        
     def test_create_inventory(self):
         """It should Create an Inventory """
         # generate fake request json
