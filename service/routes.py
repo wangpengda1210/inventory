@@ -193,7 +193,7 @@ def get_products(inventory_id, product_id):
             f"Products with id '{product_id}' could not be found.",
         )
 
-    return make_response(jsonify(Product.serialize()), status.HTTP_200_OK)
+    return make_response(jsonify(product.serialize()), status.HTTP_200_OK)
 
 
 

@@ -8,7 +8,7 @@ Test cases can be run with the following:
 import os
 import logging
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from urllib import request
 from tests.factory import InventoryFactory, ProductFactory, Condition
 from service import app
 from service.models import db, Inventory, init_db, Product
@@ -119,46 +119,10 @@ class TestInventoryServer(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data["name"], inventory.name)
-    
-    def test_read_inventory_not_found(self):
-        """It should not Read the Inventory when it is not found"""
-        resp = self.client.get(f"{BASE_URL}/0")
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     ######################################################################
     #  P R O D U C T   T E S T   C A S E S
     ######################################################################
-
-    def test_read_product(self):
-        """It should Read a group of Products (with same condition) from an Inventory"""
-        # create a known product
-        inventory = self._create_inventories(1)[0]
-        product = ProductFactory()
-        resp = self.client.post(
-            f"{BASE_URL}/{inventory.id}/products",
-            json=product.serialize(),
-            content_type="application/json",
-        )
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-
-        data = resp.get_json()
-        logging.debug(data)
-        product_id = data["id"]
-
-        # retrieve it back
-        resp = self.client.get(
-            f"{BASE_URL}/{inventory.id}/products/{product_id}",
-            content_type="application/json",
-        )
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-
-        data = resp.get_json()
-        logging.debug(data)
-        self.assertEqual(data["inventory_id"], inventory.id)
-        self.assertEqual(data["condition"], product.condition)
-        self.assertEqual(data["restock_level"], product.restock_level)
-        self.assertEqual(data["quantity"], product.quantity)
-        
     def test_create_inventory(self):
         """It should Create an Inventory """
         # generate fake request json
@@ -183,6 +147,36 @@ class TestInventoryServer(TestCase):
         requests_json[0]["name"] += "_diff"
         resp = self.client.post(BASE_URL, json=requests_json[0])
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+    def test_read_product(self):
+        """It should Read a group of Products (with same condition) from an Inventory"""
+        # create a known product
+        requests_json = self._generate_inventories_with_products(1,1)
+        # print("what's generated:", requests_json)
+        resp = self.client.post(BASE_URL, json=requests_json[0])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        data = resp.get_json()
+        logging.debug(data)
+        print("what's stored", data)
+
+        inventory_id = data["id"]
+        product = data["products"][0]
+        product_id = product["id"]
+
+        # retrieve it back
+        resp = self.client.get(
+            f"{BASE_URL}/{inventory_id}/products/{product_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        logging.debug(data)
+        print("what's returned", data)
+
+        self.assertEqual(data["inventory_id"], inventory_id)
+        self.assertEqual(data["condition"], product["condition"])
+        self.assertEqual(data["restock_level"], product["restock_level"])
+        self.assertEqual(data["quantity"], product["quantity"])
 
     # ######################################################################
     # #  T E S T   S A D   P A T H S
@@ -238,3 +232,35 @@ class TestInventoryServer(TestCase):
         requests_json["products"][0].pop("condition")
         resp = self.client.post(BASE_URL, json=requests_json)
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_read_inventory_not_found(self):
+        """It should not Read the Inventory when it is not found"""
+        resp = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_read_product_not_found(self):
+        """It should not Read the Product when it is not found"""
+        resp = self.client.get(f"{BASE_URL}/0/products/1")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_methods_not_allowed(self):
+        """
+        It should not allow
+        PUT/DELETE to /inventories
+        POST to /inventories/<inventory_id>
+        PUT/POST/DELETE to /inventories/<inventory_id>/products/<product_id>
+        """
+        resp = self.client.put(f"{BASE_URL}")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        resp = self.client.delete(f"{BASE_URL}")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        resp = self.client.post(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        resp = self.client.put(f"{BASE_URL}/0/products/0")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        resp = self.client.post(f"{BASE_URL}/0/products/0")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        resp = self.client.delete(f"{BASE_URL}/0/products/0")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
