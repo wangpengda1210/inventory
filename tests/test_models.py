@@ -56,35 +56,35 @@ class TestInventory(unittest.TestCase):
         """It should Create an inventory and assert that it exists"""
         fake_inventory = InventoryFactory()
         inventory = Inventory(
-            name=fake_inventory.name, 
+            name=fake_inventory.name,
         )
         self.assertIsNotNone(inventory)
         self.assertEqual(inventory.id, None)
         self.assertEqual(inventory.name, fake_inventory.name)
-    
+
 
     def test_add_a_inventory(self):
         """It should Create an inventory and add it to the database"""
-        inventorys = Inventory.all()
-        self.assertEqual(inventorys, [])
+        inventories = Inventory.all()
+        self.assertEqual(inventories, [])
         inventory = InventoryFactory()
         inventory.create()
         # Assert that it was assigned an id and shows up in the database
         self.assertIsNotNone(inventory.id)
-        inventorys = inventory.all()
-        self.assertEqual(len(inventorys), 1)
+        inventories = Inventory.all()
+        self.assertEqual(len(inventories), 1)
 
     def test_read_inventory(self):
         """It should Read[find by id] an inventory"""
         inventory = InventoryFactory()
         inventory.create()
-        
+
         # Read it back
         found_inventory = Inventory.find(inventory.id)
         self.assertEqual(found_inventory.id, inventory.id)
         self.assertEqual(found_inventory.name, inventory.name)
         self.assertEqual(found_inventory.products, [])
-    
+
     def test_update_inventory(self):
         """It should Update an inventory"""
         inventory = InventoryFactory(name="iphone")
@@ -94,7 +94,7 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(inventory.name, "iphone")
 
         # Fetch it back
-        inventory = inventory.find(inventory.id)
+        inventory = Inventory.find(inventory.id)
         inventory.name = "iphone_discount"
         inventory.update()
 
@@ -104,29 +104,29 @@ class TestInventory(unittest.TestCase):
 
     def test_delete_an_inventory(self):
         """It should Delete an inventory from the database"""
-        inventorys = Inventory.all()
-        self.assertEqual(inventorys, [])
+        inventories = Inventory.all()
+        self.assertEqual(inventories, [])
         inventory = InventoryFactory()
         inventory.create()
         # Assert that it was assigned an id and shows up in the database
         self.assertIsNotNone(inventory.id)
-        inventorys = inventory.all()
-        self.assertEqual(len(inventorys), 1)
-        inventory = inventorys[0]
+        inventories = Inventory.all()
+        self.assertEqual(len(inventories), 1)
+        inventory = inventories[0]
         inventory.delete()
-        inventorys = inventory.all()
-        self.assertEqual(len(inventorys), 0)
+        inventories = inventory.all()
+        self.assertEqual(len(inventories), 0)
 
-    def test_list_all_inventorys(self):
-        """It should List all inventorys in the database"""
-        inventorys = Inventory.all()
-        self.assertEqual(inventorys, [])
+    def test_list_all_inventories(self):
+        """It should List all inventories in the database"""
+        inventories = Inventory.all()
+        self.assertEqual(inventories, [])
         for _ in range(5):
             inventory = InventoryFactory()
             inventory.create()
-        # Assert that there are now 5 inventorys in the database
-        inventorys = inventory.all()
-        self.assertEqual(len(inventorys), 5)
+        # Assert that there are now 5 inventories in the database
+        inventories = Inventory.all()
+        self.assertEqual(len(inventories), 5)
 
     def test_find_by_name(self):
         """It should Find an inventory by name"""
@@ -218,7 +218,7 @@ class TestInventory(unittest.TestCase):
         for open_box in open_box_cll:
             self.assertEqual(open_box.condition.name, "OPEN_BOX")
         for prod in [prod for prod in Product.all() if prod not in open_box_cll]:
-               self.assertNotEqual(prod.condition.name, "OPEN_BOX")
+            self.assertNotEqual(prod.condition.name, "OPEN_BOX")
 
     def test_find_by_restock_level(self):
         """It should return all products under a certain condition"""
@@ -234,7 +234,7 @@ class TestInventory(unittest.TestCase):
         for low_stock in low_stock_cll:
             self.assertEqual(low_stock.restock_level.name, "LOW")
         for prod in [prod for prod in Product.all() if prod not in low_stock_cll]:
-               self.assertNotEqual(prod.restock_level.name, "LOW")
+            self.assertNotEqual(prod.restock_level.name, "LOW")
 
     def test_find_by_condition_and_restock_level(self):
         #generate data for tests
@@ -244,8 +244,10 @@ class TestInventory(unittest.TestCase):
             product = ProductFactory()
             inventory.products.append(product)
         #check LOW and OPEN_BOX
-        #check that filtered products only exist in open_box_and_low_cll but not in the remaining cll
-        open_box_and_low_cll = Product.find_by_condition_and_restock_level(Condition.OPEN_BOX, Stock_Level.LOW).all()
+        #check that filtered products only exist in open_box_and_low_cll
+        # but not in the remaining cll
+        open_box_and_low_cll = Product.find_by_condition_and_restock_level(
+            Condition.OPEN_BOX, Stock_Level.LOW).all()
         for open_box_and_low in open_box_and_low_cll:
             self.assertEqual(open_box_and_low.condition.name, "OPEN_BOX")
             self.assertEqual(open_box_and_low.restock_level.name, "LOW")
@@ -255,10 +257,6 @@ class TestInventory(unittest.TestCase):
             if (prod.restock_level.name =="LOW"): assert_indicator += 1
             if (prod.condition.name == "OPEN_BOX"): assert_indicator += 1
             self.assertNotEqual(assert_indicator, 2)
-
-
-
-        
 
 ##############################
 
