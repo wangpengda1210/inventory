@@ -81,7 +81,6 @@ class TestInventoryServer(TestCase):
             for _ in range(num_products):
                 product = ProductFactory()
                 inventory.products.append(product)
-            # print(inventory.serialize())
             inventories_json.append(inventory.serialize())
 
         return inventories_json
@@ -106,8 +105,9 @@ class TestInventoryServer(TestCase):
         requests_json = self._generate_inventories_with_products(5,2)
         resp = self.client.get(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.get_json()
-        self.assertEqual(len(data), 5)
+        self.assertEqual(len(requests_json), 5)
+        products = requests_json[0]["products"]
+        self.assertEqual(len(products),2)
 
     def test_read_inventory(self):
         """It should Read a single Inventory"""
@@ -209,11 +209,9 @@ class TestInventoryServer(TestCase):
         # send the first request
         resp = self.client.post(BASE_URL, json=requests_json[0])
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        print(resp.get_json())
         # send the second request
         resp = self.client.post(BASE_URL, json=requests_json[1])
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        print(resp.get_json())
 
         # set a conflict condition
         conflict_json = self._generate_inventories_with_products(1,2)[0]
@@ -222,7 +220,6 @@ class TestInventoryServer(TestCase):
         conflict_products_second = conflict_json["products"][1]
         conflict_products_second["condition"] = Condition.OPEN_BOX
         conflict_json["name"] = requests_json[0]["name"]
-        print(conflict_json)
         resp = self.client.post(BASE_URL, json=conflict_json)
         self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
 
