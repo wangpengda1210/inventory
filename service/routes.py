@@ -4,6 +4,9 @@ My Service
 Describe what your service does here
 """
 
+from itertools import product
+from math import prod
+from multiprocessing import Condition
 import os
 import sys
 import logging
@@ -72,25 +75,69 @@ def list_inventories():
 #     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
-# #####################################################################
-# # CREATE A NEW INVENTORY (#story 8)
-# #####################################################################
-# @app.route("/inventories", methods=["POST"])
-# def create_inventories():
-#     """
-#     Creates an Inventory
-#     This endpoint will create an inventory based the data in the body that is posted
-#     """
-#     app.logger.info("Request to create an Inventory")
-#     check_content_type("application/json")
-#     inventory = Inventory()
-#     inventory.deserialize(request.get_json())
-#     inventory.create()
-#     message = inventory.serialize()
-#     location_url = url_for("create_inventories", inventory_id=inventory.id, _external=True)
-#     return make_response(
-#         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
-#     )
+#####################################################################
+# CREATE A NEW INVENTORY (#story 8)
+#####################################################################
+@app.route("/inventories", methods=["POST"])
+def create_inventories():
+    """
+    Creates an Inventory
+    This endpoint will create an inventory based the data in the body that is posted
+    """
+    app.logger.info("Request to create an Inventory")
+    check_content_type("application/json")
+
+    name = request.get_json().get("name")
+    # print(request.get_json())
+
+    # If there is no name in json, request can't be process
+    if not name:
+        abort(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, f"Inventory name was not provided."
+        )
+
+    inventory = Inventory.find_by_name(name).first()
+    # print(inventory)
+    products_list = request.get_json().get("products")
+    if inventory:
+        # inventory_products = Product.all()
+        # print(inventory.id)
+        inventory_products = Product.find_by_inventory_id(inventory.id).all()
+        conditions = [p.condition for p in inventory_products]
+        # print(conditions)
+        # conditions = [p.condition for p in inventory_products]
+        for product_data in products_list:
+            condition = product_data.get("condition")
+            # print(condition)
+            if condition in conditions:
+                # print(condition)
+                # print(conditions)
+                abort(
+                    status.HTTP_409_CONFLICT, f"Inventory '{name}' with condition '{condition}' already exists."
+                )         
+
+    else:
+        # create inventory
+        inventory = Inventory()
+        inventory.deserialize(request.get_json())
+        inventory.create()
+
+    # create products
+    # print(products_list)
+    if products_list:
+        for product_data in products_list:
+            condition = product_data.get("condition")
+            inventory.create_product(product_data)
+            app.logger.info("Inventory [%s] with condition [%s] created.", name, condition)
+    else:
+        app.logger.info("Inventory [%s] created.", name)
+
+    message = inventory.serialize()
+    location_url = url_for("create_inventories", inventory_id=inventory.id, _external=True)
+    
+    return make_response(
+        jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
+    )
 
 # ######################################################################
 # # UPDATE AN EXISTING INVENTORY  (#story 10)
