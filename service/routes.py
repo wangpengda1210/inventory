@@ -100,7 +100,6 @@ def create_inventories():
         conditions = [p.condition for p in inventory_products]
         for product_data in products_list:
             condition = product_data.get("condition")
-            print(condition)
             if condition in conditions:
                 abort(
                     status.HTTP_409_CONFLICT,
