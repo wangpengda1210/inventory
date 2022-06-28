@@ -3,7 +3,6 @@ My Service
 
 Describe what your service does here
 """
-
 from itertools import product
 from math import prod
 from multiprocessing import Condition
@@ -37,7 +36,7 @@ def index():
     )
 
 ######################################################################
-# LIST ALL INVENTORIES 
+# LIST ALL INVENTORIES
 ######################################################################
 @app.route("/inventories", methods=["GET"])
 def list_inventories():
@@ -55,7 +54,7 @@ def list_inventories():
 
 
 # ######################################################################
-# # RETRIEVE AN INVENTORY   (#story 4) 
+# # RETRIEVE AN INVENTORY   (#story 4)
 # ######################################################################
 # @app.route("/inventories/<int:inventory_id>", methods=["GET"])
 # def get_inventories(inventory_id):
@@ -88,8 +87,6 @@ def create_inventories():
     check_content_type("application/json")
 
     name = request.get_json().get("name")
-    # print(request.get_json())
-
     # If there is no name in json, request can't be process
     if not name:
         abort(
@@ -97,24 +94,18 @@ def create_inventories():
         )
 
     inventory = Inventory.find_by_name(name).first()
-    # print(inventory)
     products_list = request.get_json().get("products")
     if inventory:
-        # inventory_products = Product.all()
-        # print(inventory.id)
         inventory_products = Product.find_by_inventory_id(inventory.id).all()
         conditions = [p.condition for p in inventory_products]
-        # print(conditions)
-        # conditions = [p.condition for p in inventory_products]
         for product_data in products_list:
             condition = product_data.get("condition")
-            # print(condition)
+            print(condition)
             if condition in conditions:
-                # print(condition)
-                # print(conditions)
                 abort(
-                    status.HTTP_409_CONFLICT, f"Inventory '{name}' with condition '{condition}' already exists."
-                )         
+                    status.HTTP_409_CONFLICT,
+                    f"Inventory '{name}' with condition '{condition}' already exists."
+                )
 
     else:
         # create inventory
@@ -123,7 +114,6 @@ def create_inventories():
         inventory.create()
 
     # create products
-    # print(products_list)
     if products_list:
         for product_data in products_list:
             condition = product_data.get("condition")
@@ -134,7 +124,6 @@ def create_inventories():
 
     message = inventory.serialize()
     location_url = url_for("create_inventories", inventory_id=inventory.id, _external=True)
-    
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
