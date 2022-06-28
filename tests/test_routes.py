@@ -95,3 +95,53 @@ class TestInventoryServer(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), 5)
+
+    def test_read_inventory(self):
+        """It should Read a single Inventory"""
+        # get the id of an Inventory
+        inventory = self._create_inventories(1)[0]
+        resp = self.client.get(
+            f"{BASE_URL}/{inventory.id}", content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data["name"], inventory.name)
+    
+    def test_read_inventory_not_found(self):
+        """It should not Read the Inventory when it is not found"""
+        resp = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    ######################################################################
+    #  P R O D U C T   T E S T   C A S E S
+    ######################################################################
+
+    def test_read_product(self):
+        """It should Read a group of Products (with same condition) from an Inventory"""
+        # create a known product
+        inventory = self._create_inventories(1)[0]
+        product = ProductFactory()
+        resp = self.client.post(
+            f"{BASE_URL}/{inventory.id}/products",
+            json=product.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        data = resp.get_json()
+        logging.debug(data)
+        product_id = data["id"]
+
+        # retrieve it back
+        resp = self.client.get(
+            f"{BASE_URL}/{inventory.id}/products/{product_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.get_json()
+        logging.debug(data)
+        self.assertEqual(data["inventory_id"], inventory.id)
+        self.assertEqual(data["condition"], product.condition)
+        self.assertEqual(data["restock_level"], product.restock_level)
+        self.assertEqual(data["quantity"], product.quantity)
