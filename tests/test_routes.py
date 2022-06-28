@@ -134,6 +134,26 @@ class TestInventoryServer(TestCase):
         resp = self.client.post(BASE_URL, json=requests_json[0])
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
+    def test_delete_inventory(self):
+        """It should Delete an Inventory """
+        # generate fake request json
+        requests_json = self._generate_inventories_with_products(1,1)
+
+        # create
+        resp = self.client.post(BASE_URL, json=requests_json[0])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # delete
+        inventory_json = resp.get_json()
+        inventory_id = inventory_json["id"]
+        resp = self.client.delete(BASE_URL+"/"+ str(inventory_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+        inventories = Inventory.all()
+        self.assertEqual(len(inventories), 0)
+
+
+
     # ######################################################################
     # #  T E S T   S A D   P A T H S
     # ######################################################################
@@ -188,3 +208,14 @@ class TestInventoryServer(TestCase):
         requests_json["products"][0].pop("condition")
         resp = self.client.post(BASE_URL, json=requests_json)
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_delete_not_exist_inventory(self):
+        """It should return 204 when Deleting not exist inventory"""
+        # generate fake request json
+        inventory_json = self._generate_inventories_with_products(1,1)[0]
+
+        # delete
+        inventory_id = inventory_json["id"]
+        resp = self.client.delete(BASE_URL+"/"+ str(inventory_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+ 

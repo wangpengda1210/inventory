@@ -3,7 +3,6 @@ My Service
 
 Describe what your service does here
 """
-from itertools import product
 from math import prod
 from multiprocessing import Condition
 import os
@@ -154,18 +153,19 @@ def create_inventories():
 # ######################################################################
 # # DELETE AN INVENTORY   (#story 9)
 # ######################################################################
-# @app.route("/accounts/<int:account_id>", methods=["DELETE"])
-# def delete_accounts(account_id):
-#     """
-#     Delete an Account
-
-#     This endpoint will delete an Account based the id specified in the path
-#     """
-#     app.logger.info("Request to delete account with id: %s", account_id)
-#     account = Account.find(account_id)
-#     if account:
-#         account.delete()
-#     return make_response("", status.HTTP_204_NO_CONTENT)
+@app.route("/inventories/<int:inventory_id>", methods=["DELETE"])
+def delete_inventory(inventory_id):
+    """
+    Delete an Inventory
+    This endpoint will delete an Inventory based id specified in the path
+    """
+    app.logger.info("Request to delete inventory with id: %s", inventory_id)
+    inventory = Inventory.find(inventory_id)
+    if inventory:
+        for product in Product.find_by_inventory_id(inventory_id):
+            product.delete()
+        inventory.delete()
+    return make_response("", status.HTTP_204_NO_CONTENT)
 
 
 

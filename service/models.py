@@ -22,7 +22,6 @@ class DataValidationError(Exception):
 
 class Condition(IntEnum):
     """Enumeration of condition of a valid Inventory """
-
     NEW = 1
     OPEN_BOX = 2
     USED = 3
@@ -46,7 +45,8 @@ class PersistentBase:
         """
         Creates a record to the database
         """
-        logger.info("Creating %s", self.name)
+        # logger.info("Creating %s", self.name)
+        logger.info("Creating")
         self.id = None  # id must be none to generate next primary key
         db.session.add(self)
         db.session.commit()
@@ -55,12 +55,12 @@ class PersistentBase:
         """
         Updates a record to the database
         """
-        logger.info("Updating %s", self.name)
+        logger.info("Updating %s", self.id)
         db.session.commit()
 
     def delete(self):
         """Removes a record from the data store"""
-        logger.info("Deleting %s", self.name)
+        logger.info("Deleting %s", self.id)
         db.session.delete(self)
         db.session.commit()
 
@@ -124,7 +124,7 @@ class Product(db.Model, PersistentBase):
     def serialize(self) -> dict:
         """ Serializes a Product into a dictionary """
         return {
-            "id": self.id, 
+            "id": self.id,
             "condition": self.condition,
             "restock_level": self.restock_level,
             "quantity": self.quantity,
@@ -284,6 +284,7 @@ class Inventory(db.Model, PersistentBase):
         product = Product()
         product.deserialize(data)
         self.products.append(product)
+        product.create()
 
 
     ##################################################
