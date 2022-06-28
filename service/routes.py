@@ -57,22 +57,22 @@ def list_inventories():
 # ######################################################################
 # # RETRIEVE AN INVENTORY   (#story 4) 
 # ######################################################################
-# @app.route("/inventories/<int:inventory_id>", methods=["GET"])
-# def get_inventories(inventory_id):
-#     """
-#     Retrieve a single Inventory
+@app.route("/inventories/<int:inventory_id>", methods=["GET"])
+def get_inventories(inventory_id):
+    """
+    Retrieve a single Inventory
 
-#     This endpoint will return an Inventory based on it's id
-#     """
-#     app.logger.info("Request for Inventory with id: %s", inventory_id)
-#     inventory = Inventory.find(inventory_id)
-#     if not inventory:
-#         abort(
-#             status.HTTP_404_NOT_FOUND,
-#             f"Inventory with id '{inventory_id}' could not be found.",
-#         )
+    This endpoint will return an Inventory based on it's id
+    """
+    app.logger.info("Request for Inventory with id: %s", inventory_id)
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' could not be found.",
+        )
 
-#     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+    return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
 #####################################################################
@@ -93,7 +93,7 @@ def create_inventories():
     # If there is no name in json, request can't be process
     if not name:
         abort(
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, f"Inventory name was not provided."
+            status.HTTP_406_NOT_ACCEPTABLE, f"Inventory name was not provided."
         )
 
     inventory = Inventory.find_by_name(name).first()
@@ -108,7 +108,7 @@ def create_inventories():
         # conditions = [p.condition for p in inventory_products]
         for product_data in products_list:
             condition = product_data.get("condition")
-            # print(condition)
+            print(condition)
             if condition in conditions:
                 # print(condition)
                 # print(conditions)
