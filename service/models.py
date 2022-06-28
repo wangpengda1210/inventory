@@ -4,7 +4,7 @@ Models for Inventory
 All of the models are stored in this module
 """
 import logging
-from enum import Enum
+from enum import Enum, IntEnum
 from flask_sqlalchemy import SQLAlchemy
 
 logger = logging.getLogger("flask.app")
@@ -18,10 +18,9 @@ def init_db(app):
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
-
     pass
 
-class Condition(Enum):
+class Condition(IntEnum):
     """Enumeration of condition of a valid Inventory """
 
     NEW = 1
@@ -29,7 +28,7 @@ class Condition(Enum):
     USED = 3
     UNKNOWN = 4
 
-class Stock_Level(Enum):
+class Stock_Level(IntEnum):
     """Enumeration of Stock_Level of a valid Inventory """
     EMPTY = 0
     LOW = 1
@@ -104,9 +103,9 @@ class Product(db.Model, PersistentBase):
         db.Enum(Stock_Level), nullable=False, server_default=(Stock_Level.EMPTY.name)
     )
     quantity = db.Column(db.Integer, nullable=False, default=0)
-    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id', ondelete="CASCADE"), nullable=False)
-    
-    
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id', ondelete="CASCADE"), 
+                    nullable=False)
+
 
     def __repr__(self):
         return "<Product %d id=[%s] inventory[%s]>" % (
@@ -121,7 +120,7 @@ class Product(db.Model, PersistentBase):
     #         self.id,
     #         self.inventory_id,
     #     )
- 
+
     def serialize(self) -> dict:
         """ Serializes a Product into a dictionary """
         return {
@@ -130,7 +129,7 @@ class Product(db.Model, PersistentBase):
             "restock_level": self.restock_level,
             "quantity": self.quantity,
             "inventory_id": self.inventory_id,
-            }  
+            }
 
     def deserialize(self, data):
         """
@@ -140,12 +139,10 @@ class Product(db.Model, PersistentBase):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.condition = getattr(Condition, data["condition"])  # create enum from string
-            self.restock_level = getattr(Stock_Level, data["restock_level"])  # create enum from string
+            self.condition =  data["condition"]  # create enum from string
+            self.restock_level = data["restock_level"]  # create enum from string
             self.quantity = data["quantity"]
 
-        except AttributeError as error:
-            raise DataValidationError("Invalid attribute: " + error.args[0])
         except KeyError as error:
             raise DataValidationError(
                 "Invalid Inventory: missing " + error.args[0]
@@ -154,14 +151,12 @@ class Product(db.Model, PersistentBase):
             raise DataValidationError(
                 "Invalid Product: body of request contained bad or no data" + str(error)
             )
-        
         return self
 
 
     ##################################################
         # CLASS METHODS
     ##################################################
-
 
     @classmethod
     def find_by_condition(cls, condition: Enum) -> list:
@@ -176,6 +171,20 @@ class Product(db.Model, PersistentBase):
         """
         logger.info("Processing condition query for %s ...", condition)
         return cls.query.filter(cls.condition == condition)
+
+    @classmethod
+    def find_by_inventory_id(cls, inventory_id) -> list:
+        """Returns all of the Products in a condition
+
+        :param condition: the condition of the Products you want to match
+        :type condition: Enum
+
+        :return: a collection of Products in that condition
+        :rtype: list
+
+        """
+        logger.info("Processing product query for %s ...", inventory_id)
+        return cls.query.filter(cls.inventory_id==inventory_id)
 
     @classmethod
     def find_by_restock_level(cls, restock_level: Enum) -> list:
@@ -220,22 +229,22 @@ class Inventory(db.Model, PersistentBase):
     """
 
     app = None
- 
+
     # Table Schema
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(63))
     products = db.relationship('Product', backref='inventory', passive_deletes=True, lazy=True)
-    
+
     def __repr__(self):
         return "<Inventory %r id=[%s]>" % (
-            self.name, 
+            self.name,
             self.id,
             )
 
     def serialize(self) -> dict:
         """ Serializes a Inventory into a dictionary """
         inventory = {
-            "id": self.id, 
+            "id": self.id,
             "name": self.name,
             "products": [],
             }
@@ -252,12 +261,9 @@ class Inventory(db.Model, PersistentBase):
         """
         try:
             self.name = data["name"]
-            # handle innter list of products
-            product_list = data.get("products")
-            for json_product in product_list:
-                product = Product()
-                product.deserialize(json_product)
-                self.products.append(product)
+            # # handle inner list of products
+            # product_data = data.get("products")
+
         except KeyError as error:
             raise DataValidationError(
                 "Invalid Inventory: missing " + error.args[0]
@@ -267,6 +273,17 @@ class Inventory(db.Model, PersistentBase):
                 "Invalid Inventory: body of request contained bad or no data" + str(error)
             )
         return self
+
+    def create_product(self, data):
+        """
+        Create an Inventory item from a dictionary
+
+        Args:
+            data (dict): A dictionary containing the resource data
+        """
+        product = Product()
+        product.deserialize(data)
+        self.products.append(product)
 
 
     ##################################################
@@ -282,3 +299,13 @@ class Inventory(db.Model, PersistentBase):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
+
+    # @classmethod
+    # def if_exists_by_name(cls, name):
+    #     """Returns whether an inventory with the given name already created
+
+    #     Args:
+    #         name (string): the name of the Inventories you want to match
+    #     """
+    #     logger.info("Processing existence query for %s ...", name)
+    #     return db.session.query(cls.query.filter(cls.name == name)).scalar()
