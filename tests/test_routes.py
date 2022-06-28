@@ -100,13 +100,18 @@ class TestInventoryServer(TestCase):
         resp = self.client.get(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
-        self.assertEqual(data, [],"wrong response")
+        self.assertEqual(data, [], "wrong response")
         # when there is 5 inventories, return 5 inventories
+        #create fake data
         requests_json = self._generate_inventories_with_products(5,2)
+        for i in range(5):
+            resp = self.client.post(BASE_URL, json=requests_json[i])
+            self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         resp = self.client.get(BASE_URL)
+        data = resp.get_json()
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(requests_json), 5)
-        products = requests_json[0]["products"]
+        self.assertEqual(len(data), 5)
+        products = data[0]["products"]
         self.assertEqual(len(products),2)
 
     def test_create_inventory(self):
