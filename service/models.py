@@ -4,7 +4,7 @@ Models for Inventory
 All of the models are stored in this module
 """
 import logging
-from enum import Enum
+from enum import Enum, IntEnum
 from flask_sqlalchemy import SQLAlchemy
 
 logger = logging.getLogger("flask.app")
@@ -21,7 +21,7 @@ class DataValidationError(Exception):
 
     pass
 
-class Condition(Enum):
+class Condition(IntEnum):
     """Enumeration of condition of a valid Inventory """
 
     NEW = 1
@@ -29,7 +29,7 @@ class Condition(Enum):
     USED = 3
     UNKNOWN = 4
 
-class Stock_Level(Enum):
+class Stock_Level(IntEnum):
     """Enumeration of Stock_Level of a valid Inventory """
     EMPTY = 0
     LOW = 1
@@ -106,7 +106,6 @@ class Product(db.Model, PersistentBase):
     quantity = db.Column(db.Integer, nullable=False, default=0)
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id', ondelete="CASCADE"), nullable=False)
     
-    
 
     def __repr__(self):
         return "<Product %d id=[%s] inventory[%s]>" % (
@@ -140,8 +139,8 @@ class Product(db.Model, PersistentBase):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.condition = getattr(Condition, data["condition"])  # create enum from string
-            self.restock_level = getattr(Stock_Level, data["restock_level"])  # create enum from string
+            self.condition =  data["condition"]  # create enum from string
+            self.restock_level = data["restock_level"]  # create enum from string
             self.quantity = data["quantity"]
 
         except AttributeError as error:
@@ -162,7 +161,6 @@ class Product(db.Model, PersistentBase):
         # CLASS METHODS
     ##################################################
 
-
     @classmethod
     def find_by_condition(cls, condition: Enum) -> list:
         """Returns all of the Products in a condition
@@ -176,6 +174,20 @@ class Product(db.Model, PersistentBase):
         """
         logger.info("Processing condition query for %s ...", condition)
         return cls.query.filter(cls.condition == condition)
+
+    @classmethod
+    def find_by_inventory_id(cls, inventory_id) -> list:
+        """Returns all of the Products in a condition
+
+        :param condition: the condition of the Products you want to match
+        :type condition: Enum
+
+        :return: a collection of Products in that condition
+        :rtype: list
+
+        """
+        logger.info("Processing product query for %s ...", inventory_id)
+        return cls.query.filter(cls.inventory_id==inventory_id)
 
     @classmethod
     def find_by_restock_level(cls, restock_level: Enum) -> list:
@@ -253,11 +265,8 @@ class Inventory(db.Model, PersistentBase):
         try:
             self.name = data["name"]
             # handle innter list of products
-            product_list = data.get("products")
-            for json_product in product_list:
-                product = Product()
-                product.deserialize(json_product)
-                self.products.append(product)
+            product_data = data.get("products")
+
         except KeyError as error:
             raise DataValidationError(
                 "Invalid Inventory: missing " + error.args[0]
@@ -268,6 +277,23 @@ class Inventory(db.Model, PersistentBase):
             )
         return self
 
+    def create_product(self, data):
+        try: 
+            product = Product()
+            product.deserialize(data)
+            self.products.append(product)
+            
+
+        except KeyError as error:
+            raise DataValidationError(
+                "Invalid Product: missing " + error.args[0]
+            )
+        except TypeError as error:
+            raise DataValidationError(
+                "Invalid Product: body of request contained bad or no data" + str(error)
+            )
+
+        
 
     ##################################################
     # CLASS METHODS
@@ -282,3 +308,13 @@ class Inventory(db.Model, PersistentBase):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
+
+    @classmethod
+    def if_exists_by_name(cls, name):
+        """Returns whether an inventory with the given name already created
+
+        Args:
+            name (string): the name of the Inventories you want to match
+        """
+        logger.info("Processing existence query for %s ...", name)
+        return db.session.query(cls.query.filter(cls.name == name)).scalar()

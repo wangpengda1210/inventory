@@ -63,8 +63,6 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(inventory.name, fake_inventory.name)
     
 
-
-
     def test_add_a_inventory(self):
         """It should Create an inventory and add it to the database"""
         inventorys = Inventory.all()
