@@ -27,7 +27,7 @@ class Condition(IntEnum):
     UNKNOWN = 4
 
 class StockLevel(IntEnum):
-    """Enumeration of Stock_Level of a valid Inventory """
+    """Enumeration of StockLevel of a valid Inventory """
     EMPTY = 0
     LOW = 1
     MODERATE = 2
@@ -108,13 +108,6 @@ class Product(db.Model, PersistentBase):
 
     def __repr__(self):
         return f"<Product {self.condition} id=[{self.id}] inventory[{self.inventory_id}]>"
-
-    # def __str__(self):
-    #     return "%s: %s, %s" % (
-    #         self.quantity,
-    #         self.id,
-    #         self.inventory_id,
-    #     )
 
     def serialize(self) -> dict:
         """ Serializes a Product into a dictionary """

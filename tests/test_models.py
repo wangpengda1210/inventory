@@ -6,7 +6,7 @@ import os
 import logging
 import unittest
 from service import app
-from service.models import Inventory, Product, DataValidationError, db, Condition, Stock_Level
+from service.models import Inventory, Product, DataValidationError, db, Condition, StockLevel
 from tests.factory import InventoryFactory, ProductFactory
 
 # DATABASE_URI = os.getenv(
@@ -200,6 +200,7 @@ class TestInventory(unittest.TestCase):
     def test_deserialize_product_type_error(self):
         """It should not Deserialize an product with a TypeError"""
         product = Product()
+        print(repr(product))
         self.assertRaises(DataValidationError, product.deserialize, [])
 
     def test_find_by_condition(self):
@@ -228,7 +229,7 @@ class TestInventory(unittest.TestCase):
             inventory.products.append(product)
         #eg. check LOW
         #check that LOW stock level products only exist in low_cll but not in the remaining cll
-        low_stock_cll = Product.find_by_restock_level(Stock_Level.LOW).all()
+        low_stock_cll = Product.find_by_restock_level(StockLevel.LOW).all()
         for low_stock in low_stock_cll:
             self.assertEqual(low_stock.restock_level.name, "LOW")
         for prod in [prod for prod in Product.all() if prod not in low_stock_cll]:
@@ -246,7 +247,7 @@ class TestInventory(unittest.TestCase):
         #check that filtered products only exist in open_box_and_low_cll
         # but not in the remaining cll
         open_box_and_low_cll = Product.find_by_condition_and_restock_level(
-            Condition.OPEN_BOX, Stock_Level.LOW).all()
+            Condition.OPEN_BOX, StockLevel.LOW).all()
         for open_box_and_low in open_box_and_low_cll:
             self.assertEqual(open_box_and_low.condition.name, "OPEN_BOX")
             self.assertEqual(open_box_and_low.restock_level.name, "LOW")
