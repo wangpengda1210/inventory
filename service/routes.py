@@ -9,13 +9,13 @@ import os
 import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
-from .utils import status  # HTTP Status Codes
 
 # For this example we'll use SQLAlchemy, a popular ORM that supports a
 # variety of backends including SQLite, MySQL, and PostgreSQL
 from flask_sqlalchemy import SQLAlchemy
 from service.models import Inventory, Product, DataValidationError
 
+from .utils import status  # HTTP Status Codes
 # Import Flask application
 from . import app
 
@@ -55,22 +55,22 @@ def list_inventories():
 # ######################################################################
 # # RETRIEVE AN INVENTORY   (#story 4)
 # ######################################################################
-# @app.route("/inventories/<int:inventory_id>", methods=["GET"])
-# def get_inventories(inventory_id):
-#     """
-#     Retrieve a single Inventory
+@app.route("/inventories/<int:inventory_id>", methods=["GET"])
+def get_inventories(inventory_id):
+    """
+    Retrieve a single Inventory
 
-#     This endpoint will return an Inventory based on it's id
-#     """
-#     app.logger.info("Request for Inventory with id: %s", inventory_id)
-#     inventory = Inventory.find(inventory_id)
-#     if not inventory:
-#         abort(
-#             status.HTTP_404_NOT_FOUND,
-#             f"Inventory with id '{inventory_id}' could not be found.",
-#         )
+    This endpoint will return an Inventory based on it's id
+    """
+    app.logger.info("Request for Inventory with id: %s", inventory_id)
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' could not be found.",
+        )
 
-#     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+    return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
 #####################################################################
@@ -173,6 +173,28 @@ def delete_inventory(inventory_id):
 #                P R O D U C T   M E T H O D S
 # ---------------------------------------------------------------------
 
+# #####################################################################
+# # RETRIEVE A PRODUCT FROM AN INVENTORY (#story 4)
+# #####################################################################
+@app.route("/inventories/<int:inventory_id>/products/<int:product_id>", methods=["GET"])
+def get_products(inventory_id, product_id):
+    """
+    Retrieve Products of an Inventory
+
+    This endpoint returns a group of Products with a same condition
+    """
+    app.logger.info(
+        "Request to retrieve Products %s for Inventory id: %s", (product_id, inventory_id)
+    )
+    product = Product.find(product_id)
+    if not product:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Products with id '{product_id}' could not be found.",
+        )
+
+    return make_response(jsonify(product.serialize()), status.HTTP_200_OK)
+
 
 
 # #####################################################################
@@ -196,5 +218,5 @@ def check_content_type(media_type):
     app.logger.error("Invalid Content-Type: %s", content_type)
     abort(
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-        "Content-Type must be {}".format(media_type),
+        f"Content-Type must be {media_type}",
     )
