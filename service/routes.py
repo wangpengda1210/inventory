@@ -9,13 +9,13 @@ import os
 import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
-from .utils import status  # HTTP Status Codes
 
 # For this example we'll use SQLAlchemy, a popular ORM that supports a
 # variety of backends including SQLite, MySQL, and PostgreSQL
 from flask_sqlalchemy import SQLAlchemy
 from service.models import Inventory, Product, DataValidationError
 
+from .utils import status  # HTTP Status Codes
 # Import Flask application
 from . import app
 
@@ -218,5 +218,5 @@ def check_content_type(media_type):
     app.logger.error("Invalid Content-Type: %s", content_type)
     abort(
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-        "Content-Type must be {}".format(media_type),
+        f"Content-Type must be {media_type}",
     )

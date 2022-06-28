@@ -15,9 +15,9 @@
 """
 Test Factory to make fake objects for testing
 """
-import factory
-from datetime import date
 import random
+from datetime import date
+import factory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger
 from service.models import Inventory, Product, Condition, Stock_Level
 
@@ -30,7 +30,8 @@ class ProductFactory(factory.Factory):
     id = factory.Sequence(lambda n: n)
     inventory_id = None
     condition = FuzzyChoice(choices=[Condition.NEW, Condition.OPEN_BOX, Condition.USED])
-    restock_level = FuzzyChoice(choices=[Stock_Level.EMPTY, Stock_Level.LOW, Stock_Level.MODERATE, Stock_Level.PLENTY])
+    restock_level = FuzzyChoice(
+        choices=[Stock_Level.EMPTY, Stock_Level.LOW, Stock_Level.MODERATE, Stock_Level.PLENTY])
     quantity = FuzzyInteger(10, 5000)
 
 
@@ -45,6 +46,42 @@ class InventoryFactory(factory.Factory):
 
     id = factory.Sequence(lambda n: n)
     name = factory.Faker("first_name")
-    
-    products = factory.RelatedFactoryList(ProductFactory, 
+
+    products = factory.RelatedFactoryList(ProductFactory,
     factory_related_name='inventory_id', size=lambda: random.randint(1, 5))
+
+
+class InventoryFactoryNoDuplicate(factory.Factory):
+    """Creates fake inventory """
+
+    class Meta:  # pylint: disable=too-few-public-methods
+        """Maps factory to data model"""
+
+        model = Inventory
+
+    id = factory.Sequence(lambda n: n)
+    name = factory.Faker("first_name")
+
+    # products = factory.RelatedFactoryList(ProductFactory,
+    # factory_related_name='inventory_id', size=lambda: random.randint(1, 5))
+    @factory.post_generation
+    def products(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.products = extracted
+
+
+
+class ProductFactoryNoDuplicate(factory.Factory):
+    """Create fake Product"""
+    class Meta:
+        model = Product
+
+    id = factory.Sequence(lambda n: n)
+    inventory_id = None
+    condition = FuzzyChoice(choices=[Condition.NEW, Condition.OPEN_BOX, Condition.USED])
+    restock_level = FuzzyChoice(
+        choices=[Stock_Level.EMPTY, Stock_Level.LOW, Stock_Level.MODERATE, Stock_Level.PLENTY])
+    quantity = FuzzyInteger(10, 5000)
+    Inventory = factory.SubFactory(InventoryFactoryNoDuplicate)
