@@ -8,7 +8,6 @@ Test cases can be run with the following:
 import os
 import logging
 from unittest import TestCase
-from urllib import request
 from tests.factory import InventoryFactory, ProductFactory, Condition
 from service import app
 from service.models import db, Inventory, init_db, Product
@@ -39,7 +38,6 @@ class TestInventoryServer(TestCase):
     @classmethod
     def tearDownClass(cls):
         """ This runs once after the entire test suite """
-        pass
 
     def setUp(self):
         """ This runs before each test """
@@ -100,13 +98,18 @@ class TestInventoryServer(TestCase):
         resp = self.client.get(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
-        self.assertEqual(data, [],"wrong response")
+        self.assertEqual(data, [], "wrong response")
         # when there is 5 inventories, return 5 inventories
+        #create fake data
         requests_json = self._generate_inventories_with_products(5,2)
+        for i in range(5):
+            resp = self.client.post(BASE_URL, json=requests_json[i])
+            self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         resp = self.client.get(BASE_URL)
+        data = resp.get_json()
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(requests_json), 5)
-        products = requests_json[0]["products"]
+        self.assertEqual(len(data), 5)
+        products = data[0]["products"]
         self.assertEqual(len(products),2)
 
     def test_read_inventory(self):
@@ -178,6 +181,26 @@ class TestInventoryServer(TestCase):
         self.assertEqual(data["restock_level"], product["restock_level"])
         self.assertEqual(data["quantity"], product["quantity"])
 
+    def test_delete_inventory(self):
+        """It should Delete an Inventory """
+        # generate fake request json
+        requests_json = self._generate_inventories_with_products(1,1)
+
+        # create
+        resp = self.client.post(BASE_URL, json=requests_json[0])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # delete
+        inventory_json = resp.get_json()
+        inventory_id = inventory_json["id"]
+        resp = self.client.delete(BASE_URL+"/"+ str(inventory_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+        inventories = Inventory.all()
+        self.assertEqual(len(inventories), 0)
+
+
+
     # ######################################################################
     # #  T E S T   S A D   P A T H S
     # ######################################################################
@@ -242,6 +265,16 @@ class TestInventoryServer(TestCase):
         """It should not Read the Product when it is not found"""
         resp = self.client.get(f"{BASE_URL}/0/products/1")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_not_exist_inventory(self):
+        """It should return 204 when Deleting not exist inventory"""
+        # generate fake request json
+        inventory_json = self._generate_inventories_with_products(1,1)[0]
+
+        # delete
+        inventory_id = inventory_json["id"]
+        resp = self.client.delete(BASE_URL+"/"+ str(inventory_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_methods_not_allowed(self):
         """

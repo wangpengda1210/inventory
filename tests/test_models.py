@@ -2,7 +2,6 @@
 Test cases for Inventory Model
 
 """
-from itertools import product
 import os
 import logging
 import unittest
@@ -114,7 +113,7 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(len(inventories), 1)
         inventory = inventories[0]
         inventory.delete()
-        inventories = inventory.all()
+        inventories = Inventory.all()
         self.assertEqual(len(inventories), 0)
 
     def test_list_all_inventories(self):
