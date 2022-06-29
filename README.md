@@ -6,8 +6,7 @@
 This is a ducumentation for the inventory services our team is going to build.
 
 ## Overview
-
-This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
+ The `/service` folder contains your `models.py` file for our model and a `routes.py` file for our service. The `/tests` folder has test case code for testing our model and the service separately. 
 
 ## Contents
 
