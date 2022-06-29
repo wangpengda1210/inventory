@@ -21,7 +21,7 @@ BASE_URL = "/inventories"
 
 
 ######################################################################
-#  T E S T   C A S E S
+#  R O U T E   T E S T   C A S E S
 ######################################################################
 class TestInventoryServer(TestCase):
     """ REST API Server Tests """
@@ -49,7 +49,6 @@ class TestInventoryServer(TestCase):
     def tearDown(self):
         """ This runs after each test """
         db.session.remove()
-
 
     ######################################################################
     #  H E L P E R   M E T H O D S
@@ -83,9 +82,9 @@ class TestInventoryServer(TestCase):
 
         return inventories_json
 
-    ######################################################################
-    #  P L A C E   T E S T   C A S E S   H E R E
-    ######################################################################
+    # ######################################################################
+    # #  T E S T   H A P P Y   P A T H S
+    # ######################################################################
 
     def test_index(self):
         """ It should call the home page """
@@ -123,9 +122,6 @@ class TestInventoryServer(TestCase):
         data = resp.get_json()
         self.assertEqual(data["name"], inventory.name)
 
-    ######################################################################
-    #  P R O D U C T   T E S T   C A S E S
-    ######################################################################
     def test_create_inventory(self):
         """It should Create an Inventory """
         # generate fake request json
@@ -151,35 +147,23 @@ class TestInventoryServer(TestCase):
         resp = self.client.post(BASE_URL, json=requests_json[0])
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
-    def test_read_product(self):
-        """It should Read a group of Products (with same condition) from an Inventory"""
-        # create a known product
+    def test_update_inventory(self):
+        """It should Update an Inventory"""
+        # generate fake request json
         requests_json = self._generate_inventories_with_products(1,1)
-        # print("what's generated:", requests_json)
+
+        # create
         resp = self.client.post(BASE_URL, json=requests_json[0])
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        data = resp.get_json()
-        logging.debug(data)
-        print("what's stored", data)
 
-        inventory_id = data["id"]
-        product = data["products"][0]
-        product_id = product["id"]
-
-        # retrieve it back
-        resp = self.client.get(
-            f"{BASE_URL}/{inventory_id}/products/{product_id}",
-            content_type="application/json",
-        )
+        # update
+        new_inventory = resp.get_json()
+        new_inventory_id = new_inventory["id"]
+        new_inventory["name"] = "James Bond"
+        resp = self.client.put(f"{BASE_URL}/{new_inventory_id}", json=new_inventory)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.get_json()
-        logging.debug(data)
-        print("what's returned", data)
-
-        self.assertEqual(data["inventory_id"], inventory_id)
-        self.assertEqual(data["condition"], product["condition"])
-        self.assertEqual(data["restock_level"], product["restock_level"])
-        self.assertEqual(data["quantity"], product["quantity"])
+        updated = resp.get_json()
+        self.assertEqual(updated["name"], "James Bond")
 
     def test_delete_inventory(self):
         """It should Delete an Inventory """
@@ -199,7 +183,63 @@ class TestInventoryServer(TestCase):
         inventories = Inventory.all()
         self.assertEqual(len(inventories), 0)
 
+    def test_read_product(self):
+        """It should Read a group of Products (with same condition) from an Inventory"""
+        # create a known product
+        requests_json = self._generate_inventories_with_products(1,1)
+        # print("what's generated:", requests_json)
+        resp = self.client.post(BASE_URL, json=requests_json[0])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        data = resp.get_json()
+        logging.debug(data)
+        # print("what's stored", data)
 
+        inventory_id = data["id"]
+        product = data["products"][0]
+        product_id = product["id"]
+
+        # retrieve it back
+        resp = self.client.get(
+            f"{BASE_URL}/{inventory_id}/products/{product_id}",
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        logging.debug(data)
+        # print("what's returned", data)
+
+        self.assertEqual(data["inventory_id"], inventory_id)
+        self.assertEqual(data["condition"], product["condition"])
+        self.assertEqual(data["restock_level"], product["restock_level"])
+        self.assertEqual(data["quantity"], product["quantity"])
+
+    def test_update_product(self):
+        """It should Update a group of Products (with same condition) from an Inventory"""
+        # create a known product
+        requests_json = self._generate_inventories_with_products(1,1)
+        # print("what's generated:", requests_json)
+        resp = self.client.post(BASE_URL, json=requests_json[0])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        data = resp.get_json()
+        logging.debug("Created %s", data["products"][0])
+        # print("what's stored", data)
+
+        inventory_id = data["id"]
+        product = data["products"][0]
+        product_id = product["id"]
+
+        # update
+        product["quantity"] = 3000
+        product["condition"] = 3
+        logging.debug("Updated %s", product)
+        resp = self.client.put(
+            f"{BASE_URL}/{inventory_id}/products/{product_id}",
+            json=product
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        updated_product = resp.get_json()
+        self.assertEqual(updated_product["quantity"], 3000)
+        self.assertEqual(updated_product["condition"], 3)
 
     # ######################################################################
     # #  T E S T   S A D   P A T H S
@@ -240,7 +280,6 @@ class TestInventoryServer(TestCase):
         resp = self.client.post(BASE_URL, json=conflict_json)
         self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
 
-
     def test_create_inventory_no_name(self):
         """It should not Create an Inventory with no inventory name"""
         requests_json = self._generate_inventories_with_products(1,1)[0]
@@ -256,6 +295,11 @@ class TestInventoryServer(TestCase):
         resp = self.client.post(BASE_URL, json=requests_json)
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_create_inventory_wrong_content_type(self):
+        """It should not use content other than json to Create the Inventory"""
+        resp = self.client.post(BASE_URL, data="Wrong Content Type")
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
     def test_read_inventory_not_found(self):
         """It should not Read the Inventory when it is not found"""
         resp = self.client.get(f"{BASE_URL}/0")
@@ -264,6 +308,44 @@ class TestInventoryServer(TestCase):
     def test_read_product_not_found(self):
         """It should not Read the Product when it is not found"""
         resp = self.client.get(f"{BASE_URL}/0/products/1")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_inventory_no_name(self):
+        """It should not Update the Inventory without inventory name"""
+        # create an Inventory
+        request_json = self._generate_inventories_with_products(1,1)[0]
+        resp = self.client.post(BASE_URL, json=request_json)
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # incomplete the update request json by popping the name
+        new_inventory = resp.get_json()
+        new_inventory_id = new_inventory["id"]
+        new_inventory.pop("name")
+        resp = self.client.put(f"{BASE_URL}/{new_inventory_id}", json=new_inventory)
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_update_inventory_wrong_content_type(self):
+        """It should not use content other than json to Update the Inventory"""
+        # create an Inventory
+        request_json = self._generate_inventories_with_products(1,1)[0]
+        resp = self.client.post(BASE_URL, json=request_json)
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        new_inventory = resp.get_json()
+        new_inventory_id = new_inventory["id"]
+        resp = self.client.put(f"{BASE_URL}/{new_inventory_id}", data="Wrong Content Type")
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_update_inventory_not_found(self):
+        """It should not Update the Inventory when it is not found"""
+        request_json = self._generate_inventories_with_products(1,1)[0]
+        resp = self.client.put(f"{BASE_URL}/0", json=request_json)
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_product_not_found(self):
+        """It should not Update the Product when it is not found"""
+        request_json = self._generate_inventories_with_products(1,1)[0]
+        resp = self.client.put(f"{BASE_URL}/0/products/0", json=request_json["products"][0])
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_not_exist_inventory(self):
@@ -281,7 +363,7 @@ class TestInventoryServer(TestCase):
         It should not allow
         PUT/DELETE to /inventories
         POST to /inventories/<inventory_id>
-        PUT/POST/DELETE to /inventories/<inventory_id>/products/<product_id>
+        POST/DELETE to /inventories/<inventory_id>/products/<product_id>
         """
         resp = self.client.put(f"{BASE_URL}")
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -291,8 +373,6 @@ class TestInventoryServer(TestCase):
         resp = self.client.post(f"{BASE_URL}/0")
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        resp = self.client.put(f"{BASE_URL}/0/products/0")
-        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         resp = self.client.post(f"{BASE_URL}/0/products/0")
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         resp = self.client.delete(f"{BASE_URL}/0/products/0")

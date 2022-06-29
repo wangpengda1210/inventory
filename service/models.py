@@ -107,7 +107,9 @@ class Product(db.Model, PersistentBase):
 
 
     def __repr__(self):
-        return f"<Product {self.condition} id=[{self.id}] inventory[{self.inventory_id}]>"
+        return (f"<Product id=[{self.id}] "
+                f"condition=[{self.condition}] "
+                f"inventory[{self.inventory_id}]>")
 
     def serialize(self) -> dict:
         """ Serializes a Product into a dictionary """
@@ -131,14 +133,14 @@ class Product(db.Model, PersistentBase):
             self.restock_level = data["restock_level"]  # create enum from string
             self.quantity = data["quantity"]
 
-        except KeyError as error:
+        except KeyError as key_error:
             raise DataValidationError(
-                "Invalid Inventory: missing " + error.args[0]
-            )
-        except TypeError as error:
+                "Invalid Inventory: missing " + key_error.args[0]
+            ) from key_error
+        except TypeError as type_error:
             raise DataValidationError(
-                "Invalid Product: body of request contained bad or no data" + str(error)
-            )
+                "Invalid Product: body of request contained bad or no data" + str(type_error)
+            ) from type_error
         return self
 
 
@@ -249,14 +251,14 @@ class Inventory(db.Model, PersistentBase):
             # # handle inner list of products
             # product_data = data.get("products")
 
-        except KeyError as error:
+        except KeyError as key_error:
             raise DataValidationError(
-                "Invalid Inventory: missing " + error.args[0]
-            )
-        except TypeError as error:
+                "Invalid Inventory: missing " + key_error.args[0]
+            ) from key_error
+        except TypeError as type_error:
             raise DataValidationError(
-                "Invalid Inventory: body of request contained bad or no data" + str(error)
-            )
+                "Invalid Inventory: body of request contained bad or no data" + str(type_error)
+            ) from type_error
         return self
 
     def create_product(self, data):
