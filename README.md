@@ -9,24 +9,6 @@ This is a skeleton you can use to start your projects
 
 This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
 
-## Automatic Setup
-
-The best way to use this repo is to start your own repo using it as a git template. To do this just press the green **Use this template** button in GitHub and this will become the source for your repository.
-
-## Manual Setup
-
-You can also clone this repository and then copy and paste the starter code into your project repo folder on your local computer. Be careful not to copy over your own `README.md` file so be selective in what you copy.
-
-There are 4 hidden files that you will need to copy manually if you use the Mac Finder or Windows Explorer to copy files from this folder into your repo folder.
-
-These should be copied using a bash shell as follows:
-
-```bash
-    cp .gitignore  ../<your_repo_folder>/
-    cp .flaskenv ../<your_repo_folder>/
-    cp .gitattributes ../<your_repo_folder>/
-```
-
 ## Contents
 
 The project contains the following:
@@ -51,10 +33,10 @@ service/                   - service python package
 
 tests/              - test cases package
 ├── __init__.py     - package initializer
+├── factory.py      - Factory for creating fake objects for testing
 ├── test_models.py  - test suite for business models
 └── test_routes.py  - test suite for service routes
 ```
-
 
 ## Database model and its APIs
 
@@ -62,19 +44,75 @@ tests/              - test cases package
 
 ![Database model](/images/database_model.jpg)
 
-
 ```text
                           Persistent Base, SQLAlchemy
                                   /           \
   Product(db.model, Persistent Base)           Inventory(db.Model, Persistent Base) 
 ```
+
 ### APIs
 
 This is the [documentation](/images/models.html) for the database models. It's located in the images folder. Please open it in a browser.
-![database doc](/images/doc.jpg)
 
+## Available REST API
+
+### Create an Inventory
+
+  Returns json data about a single user.
+
+* **Method:**
+
+  `POST`
+
+* **URL**
+
+  `/inventories`  
+
+* **Data Params**
+  {
+    "id": 28,
+    "name": "Nicole",
+    "products": [
+        {
+            "id": 108,
+            "condition": 3,
+            "restock_level": 0,
+            "quantity": 3910,
+            "inventory_id": 0
+        }
+    ]
+}
+  
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:** `{ id : 12, name : "Michael Bloom" }`
+ 
+* **Error Response:**
+
+  * **Code:** 404 NOT FOUND <br />
+    **Content:** `{ error : "User doesn't exist" }`
+
+  OR
+
+  * **Code:** 401 UNAUTHORIZED <br />
+    **Content:** `{ error : "You are unauthorized to make this request." }`
+
+* **Sample Call:**
+
+  ```javascript
+    $.ajax({
+      url: "/users/1",
+      dataType: "json",
+      type : "GET",
+      success : function(r) {
+        console.log(r);
+      }
+    });
+  ```
 
 Reference of design: https://github.com/nyu-devops/sample-accounts
+
 
 ## License
 Copyright (c) John Rofrano. All rights reserved.
