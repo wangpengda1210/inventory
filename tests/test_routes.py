@@ -14,7 +14,7 @@ from service.models import db, Inventory, init_db, Product
 from service.utils import status  # HTTP Status Codes
 
 DATABASE_URI = os.getenv(
-    "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres"
+    "DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres"
 )
 
 BASE_URL = "/inventories"
