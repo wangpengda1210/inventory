@@ -14,6 +14,7 @@ from flask import Flask, jsonify, request, url_for, make_response, abort
 # For this example we'll use SQLAlchemy, a popular ORM that supports a
 # variety of backends including SQLite, MySQL, and PostgreSQL
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import false
 from service.models import Inventory, Product, DataValidationError
 
 from .utils import status  # HTTP Status Codes
@@ -100,29 +101,48 @@ def create_inventories():
 
     inventory = Inventory.find_by_name(name).first()
     products_list = request.get_json().get("products")
+    inventory_created = False
     if inventory:
         inventory_products = Product.find_by_inventory_id(inventory.id).all()
         conditions = [p.condition for p in inventory_products]
         for product_data in products_list:
             condition = product_data.get("condition")
+            if not condition:
+                abort(
+                        status.HTTP_400_BAD_REQUEST
+                    )
             if condition in conditions:
                 abort(
                     status.HTTP_409_CONFLICT,
                     f"Inventory '{name}' with condition '{condition}' already exists."
                 )
-
     else:
         # create inventory
         inventory = Inventory()
         inventory.deserialize(request.get_json())
         inventory.create()
+        inventory_created = True
 
     # create products
     if products_list:
+        created_products=[]
         for product_data in products_list:
-            condition = product_data.get("condition")
-            inventory.create_product(product_data)
-            app.logger.info("Inventory [%s] with condition [%s] created.", name, condition)
+            try:
+                condition = product_data.get("condition")
+                if condition in created_products:
+                    raise DataValidationError(f"Inventory '{name}' with conflict condition '{condition}'.")
+                inventory.create_product(product_data)
+                created_products.append(condition)
+                app.logger.info("Inventory [%s] with condition [%s] created.", name, condition)
+            except DataValidationError:
+                for product in Product.find_by_inventory_id(inventory.id):
+                    if product.condition in created_products:
+                        product.delete()
+                if inventory_created:
+                    inventory.delete()
+                abort(
+                    status.HTTP_400_BAD_REQUEST
+                )
     else:
         app.logger.info("Inventory [%s] created.", name)
 
