@@ -18,7 +18,6 @@ def init_db(app):
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
-    pass
 
 class Condition(IntEnum):
     """Enumeration of condition of a valid Inventory """
@@ -27,8 +26,8 @@ class Condition(IntEnum):
     USED = 3
     UNKNOWN = 4
 
-class Stock_Level(IntEnum):
-    """Enumeration of Stock_Level of a valid Inventory """
+class StockLevel(IntEnum):
+    """Enumeration of StockLevel of a valid Inventory """
     EMPTY = 0
     LOW = 1
     MODERATE = 2
@@ -91,7 +90,7 @@ class Product(db.Model, PersistentBase):
     """
     Class that represents a Product
 
-    Provide a one-to-many relationship between an inventory and its condition, 
+    Provide a one-to-many relationship between an inventory and its condition,
     restock level and number.
     """
     #Table Schema
@@ -100,26 +99,17 @@ class Product(db.Model, PersistentBase):
         db.Enum(Condition), nullable=False, server_default=(Condition.UNKNOWN.name)
     )
     restock_level = db.Column(
-        db.Enum(Stock_Level), nullable=False, server_default=(Stock_Level.EMPTY.name)
+        db.Enum(StockLevel), nullable=False, server_default=(StockLevel.EMPTY.name)
     )
     quantity = db.Column(db.Integer, nullable=False, default=0)
-    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id', ondelete="CASCADE"), 
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id', ondelete="CASCADE"),
                     nullable=False)
 
 
     def __repr__(self):
-        return "<Product %d id=[%s] inventory[%s]>" % (
-            self.condition,
-            self.id,
-            self.inventory_id,
-        )
-
-    # def __str__(self):
-    #     return "%s: %s, %s" % (
-    #         self.quantity,
-    #         self.id,
-    #         self.inventory_id,
-    #     )
+        return (f"<Product id=[{self.id}] "
+                f"condition=[{self.condition}] "
+                f"inventory[{self.inventory_id}]>")
 
     def serialize(self) -> dict:
         """ Serializes a Product into a dictionary """
@@ -143,14 +133,14 @@ class Product(db.Model, PersistentBase):
             self.restock_level = data["restock_level"]  # create enum from string
             self.quantity = data["quantity"]
 
-        except KeyError as error:
+        except KeyError as key_error:
             raise DataValidationError(
-                "Invalid Inventory: missing " + error.args[0]
-            )
-        except TypeError as error:
+                "Invalid Inventory: missing " + key_error.args[0]
+            ) from key_error
+        except TypeError as type_error:
             raise DataValidationError(
-                "Invalid Product: body of request contained bad or no data" + str(error)
-            )
+                "Invalid Product: body of request contained bad or no data" + str(type_error)
+            ) from type_error
         return self
 
 
@@ -236,10 +226,7 @@ class Inventory(db.Model, PersistentBase):
     products = db.relationship('Product', backref='inventory', passive_deletes=True, lazy=True)
 
     def __repr__(self):
-        return "<Inventory %r id=[%s]>" % (
-            self.name,
-            self.id,
-            )
+        return f"<Inventory {self.name} id=[{self.id}]>"
 
     def serialize(self) -> dict:
         """ Serializes a Inventory into a dictionary """
@@ -264,14 +251,14 @@ class Inventory(db.Model, PersistentBase):
             # # handle inner list of products
             # product_data = data.get("products")
 
-        except KeyError as error:
+        except KeyError as key_error:
             raise DataValidationError(
-                "Invalid Inventory: missing " + error.args[0]
-            )
-        except TypeError as error:
+                "Invalid Inventory: missing " + key_error.args[0]
+            ) from key_error
+        except TypeError as type_error:
             raise DataValidationError(
-                "Invalid Inventory: body of request contained bad or no data" + str(error)
-            )
+                "Invalid Inventory: body of request contained bad or no data" + str(type_error)
+            ) from type_error
         return self
 
     def create_product(self, data):
