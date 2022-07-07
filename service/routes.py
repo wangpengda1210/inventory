@@ -3,21 +3,14 @@ My Service
 
 Describe what your service does here
 """
-from math import prod
-from multiprocessing import Condition
-import os
-import sys
-import logging
-from tabnanny import check
-from flask import Flask, jsonify, request, url_for, make_response, abort
+from flask import jsonify, request, url_for, make_response, abort
 
 # For this example we'll use SQLAlchemy, a popular ORM that supports a
 # variety of backends including SQLite, MySQL, and PostgreSQL
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import false
 from service.models import Inventory, Product, DataValidationError
 
 from .utils import status  # HTTP Status Codes
+
 # Import Flask application
 from . import app
 
@@ -36,6 +29,7 @@ def index():
         ),
         status.HTTP_200_OK,
     )
+
 
 ######################################################################
 # LIST ALL INVENTORIES
@@ -59,6 +53,7 @@ def list_inventories():
     results = [inventory.serialize() for inventory in inventories]
     return make_response(jsonify(results), status.HTTP_200_OK)
 
+
 # ######################################################################
 # # RETRIEVE AN INVENTORY   (#story 4)
 # ######################################################################
@@ -79,11 +74,12 @@ def get_inventory(inventory_id):
 
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
+
 #####################################################################
 # CREATE A NEW INVENTORY (#story 8)
 #####################################################################
 @app.route("/inventories", methods=["POST"])
-def create_inventories():
+def create_inventories():  # noqa: C901
     """
     Creates an Inventory
     This endpoint will create an inventory based the data in the body that is posted
@@ -95,8 +91,7 @@ def create_inventories():
     # If there is no name in json, request can't be process
     if not name:
         abort(
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            "Inventory name was not provided."
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Inventory name was not provided."
         )
 
     inventory = Inventory.find_by_name(name).first()
@@ -108,13 +103,11 @@ def create_inventories():
         for product_data in products_list:
             condition = product_data.get("condition")
             if not condition:
-                abort(
-                        status.HTTP_400_BAD_REQUEST
-                    )
+                abort(status.HTTP_400_BAD_REQUEST)
             if condition in conditions:
                 abort(
                     status.HTTP_409_CONFLICT,
-                    f"Inventory '{name}' with condition '{condition}' already exists."
+                    f"Inventory '{name}' with condition '{condition}' already exists.",
                 )
     else:
         # create inventory
@@ -125,32 +118,37 @@ def create_inventories():
 
     # create products
     if products_list:
-        created_products=[]
+        created_products = []
         for product_data in products_list:
             try:
                 condition = product_data.get("condition")
                 if condition in created_products:
-                    raise DataValidationError(f"Inventory '{name}' with conflict condition '{condition}'.")
+                    raise DataValidationError(
+                        f"Inventory '{name}' with conflict condition '{condition}'."
+                    )
                 inventory.create_product(product_data)
                 created_products.append(condition)
-                app.logger.info("Inventory [%s] with condition [%s] created.", name, condition)
+                app.logger.info(
+                    "Inventory [%s] with condition [%s] created.", name, condition
+                )
             except DataValidationError:
                 for product in Product.find_by_inventory_id(inventory.id):
                     if product.condition in created_products:
                         product.delete()
                 if inventory_created:
                     inventory.delete()
-                abort(
-                    status.HTTP_400_BAD_REQUEST
-                )
+                abort(status.HTTP_400_BAD_REQUEST)
     else:
         app.logger.info("Inventory [%s] created.", name)
 
     message = inventory.serialize()
-    location_url = url_for("create_inventories", inventory_id=inventory.id, _external=True)
+    location_url = url_for(
+        "create_inventories", inventory_id=inventory.id, _external=True
+    )
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
+
 
 # ######################################################################
 # # UPDATE AN EXISTING INVENTORY  (#story 10)
@@ -169,19 +167,20 @@ def update_inventory(inventory_id):
     # If there is no name in json, request can't be process
     if not name:
         abort(
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            "Inventory name was not provided."
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Inventory name was not provided."
         )
 
     inventory = Inventory.find(inventory_id)
     if not inventory:
         abort(
-            status.HTTP_404_NOT_FOUND, f"Inventory with id '{inventory_id}' was not found."
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' was not found.",
         )
     inventory.deserialize(request.get_json())
     inventory.id = inventory_id
     inventory.update()
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+
 
 # ######################################################################
 # # DELETE AN INVENTORY   (#story 9)
@@ -200,6 +199,7 @@ def delete_inventory(inventory_id):
         inventory.delete()
     return make_response("", status.HTTP_204_NO_CONTENT)
 
+
 # #####################################################################
 # # RETRIEVE A PRODUCT FROM AN INVENTORY (#story 4)
 # #####################################################################
@@ -211,7 +211,8 @@ def get_products(inventory_id, product_id):
     This endpoint returns a group of Products with a same condition
     """
     app.logger.info(
-        "Request to retrieve Products %s for Inventory id: %s", (product_id, inventory_id)
+        "Request to retrieve Products %s for Inventory id: %s",
+        (product_id, inventory_id),
     )
     product = Product.find(product_id)
     if not product:
@@ -221,6 +222,7 @@ def get_products(inventory_id, product_id):
         )
 
     return make_response(jsonify(product.serialize()), status.HTTP_200_OK)
+
 
 # #####################################################################
 # # UPDATE A PRODUCT FROM AN INVENTORY (#story 10)
@@ -248,13 +250,6 @@ def update_products(inventory_id, product_id):
     update_product.update()
     app.logger.info("Updated")
     return make_response(jsonify(update_product.serialize()), status.HTTP_200_OK)
-
-# #####################################################################
-# # FILTER BY CONDITIONS (#story 12)
-# #####################################################################
-
-
-
 
 
 ######################################################################

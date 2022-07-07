@@ -16,6 +16,11 @@ install: ## Install dependencies
 test: ## Run the unit tests
 	$(info Running tests...)
 	nosetests --with-spec --spec-color
+	
+lint: ## Run the linter
+	$(info Running linting...)
+	flake8 service --count --select=E9,F63,F7,F82 --show-source --statistics
+	flake8 service --count --max-complexity=10 --max-line-length=127 --statistics
 
 run: ## Run the service
 	$(info Starting service...)
