@@ -31,7 +31,6 @@ DATABASE_URI = os.getenv(
 class TestInventory(unittest.TestCase):
     """Test Cases for Inventory Model"""
 
-
     @classmethod
     def setUpClass(cls):
         """This runs once before the entire test suite"""
