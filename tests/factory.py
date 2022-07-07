@@ -24,9 +24,9 @@ from service.models import Inventory, Product, Condition, StockLevel
 class ProductFactory(factory.Factory):
     """Create fake Product"""
 
+
     class Meta:
         model = Product
-
 
     id = factory.Sequence(lambda n: n)
     inventory_id = None
