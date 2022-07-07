@@ -16,7 +16,6 @@
 Test Factory to make fake objects for testing
 """
 import random
-from datetime import date
 import factory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger
 from service.models import Inventory, Product, Condition, StockLevel
@@ -27,6 +26,7 @@ class ProductFactory(factory.Factory):
 
     class Meta:
         model = Product
+
 
     id = factory.Sequence(lambda n: n)
     inventory_id = None
