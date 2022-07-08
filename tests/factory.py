@@ -27,13 +27,12 @@ class ProductFactory(factory.Factory):
     class Meta:
         model = Product
 
-    id = factory.Sequence(lambda n: n)
+    
     inventory_id = None
     condition = FuzzyChoice(choices=[Condition.NEW, Condition.OPEN_BOX, Condition.USED])
     restock_level = FuzzyChoice(
         choices=[StockLevel.EMPTY, StockLevel.LOW, StockLevel.MODERATE, StockLevel.PLENTY])
     quantity = FuzzyInteger(10, 5000)
-
 
 
 class InventoryFactory(factory.Factory):
@@ -78,7 +77,7 @@ class ProductFactoryNoDuplicate(factory.Factory):
     class Meta:
         model = Product
 
-    id = factory.Sequence(lambda n: n)
+    # id = factory.Sequence(lambda n: n)
     inventory_id = None
     condition = FuzzyChoice(choices=[Condition.NEW, Condition.OPEN_BOX, Condition.USED])
     restock_level = FuzzyChoice(
