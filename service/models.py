@@ -113,15 +113,13 @@ class Product(db.Model, PersistentBase):
     Provide a one-to-many relationship between an inventory and its condition,
     restock level and number.
     """
-    __tablename__="product"
-
-    #Table Schema
+    __tablename__ = "product"
     condition = db.Column(
-        db.Enum(Condition), nullable=False, 
+        db.Enum(Condition), nullable=False,
         server_default=(Condition.UNKNOWN.name), primary_key=True
     )
     inventory_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('inventory.id', ondelete="CASCADE"), primary_key=True,
         nullable=False
         )
@@ -130,7 +128,7 @@ class Product(db.Model, PersistentBase):
     )
     quantity = db.Column(db.Integer, nullable=False, default=0)
     inventory = db.relationship('Inventory', back_populates='products')
-    id = db.Column(db.Integer, unique=True, default = DefaultProductId)
+    id = db.Column(db.Integer, unique=True, default=DefaultProductId)
 
     def create(self):
         """
@@ -144,7 +142,7 @@ class Product(db.Model, PersistentBase):
     @classmethod
     def find(cls, id, *arg):
         """
-        Finds a product record by its composite primary key 
+        Finds a product record by its composite primary key
         (inventory_id,condition), or its product_id=>inventory_id*10+condition
         """
         if not arg:
@@ -155,7 +153,6 @@ class Product(db.Model, PersistentBase):
             return cls.query.get((arg[0], id))
         else:
             raise TypeError("usage: Product.find(product_id) or Product.find(inventory_id,condition)")
-
 
     def __repr__(self):
         return (f"<Product quantity=[{self.quantity}] "

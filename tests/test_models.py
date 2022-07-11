@@ -277,9 +277,9 @@ class TestInventory(unittest.TestCase):
 
         found_inventory = inventory.find(inventory.id)
         found_id = found_inventory.id
-        self.assertRaises(TypeError,Product.find, 1, 2, 3)
+        self.assertRaises(TypeError, Product.find, 1, 2, 3)
 
-        first_product =Product.find(found_id, product.condition)
+        first_product = Product.find(found_id, product.condition)
         self.assertEqual(product.condition, first_product.condition)
         self.assertEqual(product.quantity, first_product.quantity)
 
