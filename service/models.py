@@ -147,7 +147,7 @@ class Product(db.Model, PersistentBase):
         """
         if not arg:
             logger.info("Processing look up for product_id:{}".format(id))
-            return cls.query.filter(cls.id==id).first()
+            return cls.query.filter(cls.id == id).first()
         elif len(arg) == 1:
             logger.info("Processing look up for inventory_id:{} and condition:{}".format(id, arg[0]))
             return cls.query.get((arg[0], id))
