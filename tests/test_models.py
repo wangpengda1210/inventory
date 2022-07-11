@@ -4,7 +4,7 @@ Test cases for Inventory Model
 """
 import os
 import logging
-from typing import Type
+# from typing import Type
 import unittest
 from service import app
 from service.models import (
@@ -266,27 +266,26 @@ class TestInventory(unittest.TestCase):
             if prod.condition.name == "OPEN_BOX":
                 assert_indicator += 1
             self.assertNotEqual(assert_indicator, 2)
+
     def test_read_product(self):
         """It should return specific product under inventory_id&condition or product_id"""
-        inventory =InventoryFactory()
+        inventory = InventoryFactory()
         product = ProductFactory()
         product.condition = Condition.NEW
         inventory.products.append(product)
         inventory.create()
-        # print(product.condition)
+
         found_inventory = inventory.find(inventory.id)
         found_id = found_inventory.id
+        self.assertRaises(TypeError,Product.find, 1, 2, 3)
 
-        self.assertRaises(TypeError,Product.find,1,2,3)
-
-        first_product =Product.find(found_id,product.condition)
+        first_product =Product.find(found_id, product.condition)
         self.assertEqual(product.condition, first_product.condition)
-        self.assertEqual(product.quantity,first_product.quantity)
+        self.assertEqual(product.quantity, first_product.quantity)
 
         first_product = Product.find(product.id)
         self.assertEqual(product.condition, first_product.condition)
-        self.assertEqual(product.quantity,first_product.quantity)
-
+        self.assertEqual(product.quantity, first_product.quantity)
 
 
 ##############################

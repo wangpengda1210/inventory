@@ -26,7 +26,6 @@ class ProductFactory(factory.Factory):
     class Meta:
         model = Product
 
-    
     inventory_id = None
     condition = FuzzyChoice(choices=[Condition.NEW, Condition.OPEN_BOX, Condition.USED])
     restock_level = FuzzyChoice(

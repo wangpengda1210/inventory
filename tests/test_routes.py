@@ -128,7 +128,7 @@ class TestInventoryServer(TestCase):
     def test_create_inventory(self):
         """It should Create an Inventory"""
         # generate fake request json
-        requests_json = self._generate_inventories_with_products(2,1)
+        requests_json = self._generate_inventories_with_products(2, 1)
         # create not conflict product in one inventory
         # set two inventories the same name
         requests_json[1]["name"] = requests_json[0]["name"]
