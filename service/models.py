@@ -114,21 +114,24 @@ class Product(db.Model, PersistentBase):
     restock level and number.
     """
     __tablename__="product"
-    #Table Schema
-    # id = db.Column(db.Integer, primary_key=True)
-    # use inventory_id and condition as composite primary key
 
-    condition=db.Column(
-        db.Enum(Condition), nullable=False, server_default=(Condition.UNKNOWN.name), primary_key = True
+    #Table Schema
+    condition = db.Column(
+        db.Enum(Condition), nullable=False, 
+        server_default=(Condition.UNKNOWN.name), primary_key=True
     )
-    inventory_id=db.Column(db.Integer, db.ForeignKey('inventory.id', ondelete="CASCADE"), primary_key = True,
-                    nullable=False)
-    restock_level=db.Column(
+    inventory_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('inventory.id', ondelete="CASCADE"), primary_key=True,
+        nullable=False
+        )
+    restock_level = db.Column(
         db.Enum(StockLevel), nullable=False, server_default=(StockLevel.EMPTY.name)
     )
-    quantity=db.Column(db.Integer, nullable=False, default=0)
-    inventory=db.relationship('Inventory', back_populates='products')
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+    inventory = db.relationship('Inventory', back_populates='products')
     id = db.Column(db.Integer, unique=True, default = DefaultProductId)
+
     def create(self):
         """
         Creates a record to the database
@@ -147,9 +150,9 @@ class Product(db.Model, PersistentBase):
         if not arg:
             logger.info("Processing look up for product_id:{}".format(id))
             return cls.query.filter(cls.id==id).first()
-        elif len(arg)==1:
-            logger.info("Processing look up for inventory_id:{} and condition:{}".format(id,arg[0]))
-            return cls.query.get((arg[0],id))
+        elif len(arg) == 1:
+            logger.info("Processing look up for inventory_id:{} and condition:{}".format(id, arg[0]))
+            return cls.query.get((arg[0], id))
         else:
             raise TypeError("usage: Product.find(product_id) or Product.find(inventory_id,condition)")
 
