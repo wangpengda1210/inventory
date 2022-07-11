@@ -14,30 +14,38 @@ logger = logging.getLogger("flask.app")
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
 
+
 def init_db(app):
     """Initialize the SQLAlchemy app"""
     Inventory.init_db(app)
 
+
 class DataValidationError(Exception):
-    """ Used for an data validation errors when deserializing """
+    """Used for an data validation errors when deserializing"""
+
 
 class Condition(IntEnum):
-    """Enumeration of condition of a valid Inventory """
+    """Enumeration of condition of a valid Inventory"""
+
     NEW = 1
     OPEN_BOX = 2
     USED = 3
     UNKNOWN = 4
 
+
 class StockLevel(IntEnum):
-    """Enumeration of StockLevel of a valid Inventory """
+    """Enumeration of StockLevel of a valid Inventory"""
+
     EMPTY = 0
     LOW = 1
     MODERATE = 2
     PLENTY = 3
 
+
 ######################################################################
 #  P E R S I S T E N T   B A S E   M O D E L
 ######################################################################
+
 
 class PersistentBase:
     """Base class added persistent methods"""
@@ -101,6 +109,7 @@ class Product(db.Model, PersistentBase):
     #Table Schema
     # id = db.Column(db.Integer, primary_key=True)
     # use inventory_id and condition as composite primary key
+
     condition = db.Column(
         db.Enum(Condition), nullable=False, server_default=(Condition.UNKNOWN.name),primary_key = True
     )
@@ -153,7 +162,7 @@ class Product(db.Model, PersistentBase):
                 f"id[{self.id}]>")
 
     def serialize(self) -> dict:
-        """ Serializes a Product into a dictionary """
+        """Serializes a Product into a dictionary"""
         return {
             "condition": self.condition,
             "inventory_id": self.inventory_id,
@@ -170,8 +179,7 @@ class Product(db.Model, PersistentBase):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.id = data["id"]
-            self.condition =  data["condition"]  # create enum from string
+            self.condition = data["condition"]  # create enum from string
             self.restock_level = data["restock_level"]  # create enum from string
             self.quantity = data["quantity"]
             self.inventory_id = data["inventory_id"]
@@ -182,13 +190,13 @@ class Product(db.Model, PersistentBase):
             ) from key_error
         except TypeError as type_error:
             raise DataValidationError(
-                "Invalid Product: body of request contained bad or no data" + str(type_error)
+                "Invalid Product: body of request contained bad or no data"
+                + str(type_error)
             ) from type_error
         return self
 
-
     ##################################################
-        # CLASS METHODS
+    # CLASS METHODS
     ##################################################
 
     @classmethod
@@ -217,7 +225,7 @@ class Product(db.Model, PersistentBase):
 
         """
         logger.info("Processing product query for %s ...", inventory_id)
-        return cls.query.filter(cls.inventory_id==inventory_id)
+        return cls.query.filter(cls.inventory_id == inventory_id)
 
     @classmethod
     def find_by_restock_level(cls, restock_level: Enum) -> list:
@@ -234,7 +242,9 @@ class Product(db.Model, PersistentBase):
         return cls.query.filter(cls.restock_level == restock_level)
 
     @classmethod
-    def find_by_condition_and_restock_level(cls, condition,restock_level: Enum) -> list:
+    def find_by_condition_and_restock_level(
+        cls, condition, restock_level: Enum
+    ) -> list:
         """Returns all of the Products in a restock_level under a certain condition
 
         :param restock_level: the restock_level of the Products you want to match
@@ -247,7 +257,9 @@ class Product(db.Model, PersistentBase):
 
         """
         logger.info("Processing restock_level query for %s ...", restock_level)
-        return cls.query.filter(cls.restock_level == restock_level, cls.condition == condition)
+        return cls.query.filter(
+            cls.restock_level == restock_level, cls.condition == condition
+        )
 
 
 ######################################################################
@@ -274,12 +286,12 @@ class Inventory(db.Model, PersistentBase):
         return f"<Inventory {self.name} id=[{self.id}]>"
 
     def serialize(self) -> dict:
-        """ Serializes a Inventory into a dictionary """
+        """Serializes a Inventory into a dictionary"""
         inventory = {
             "id": self.id,
             "name": self.name,
             "products": [],
-            }
+        }
         for product in self.products:
             inventory["products"].append(product.serialize())
         return inventory
@@ -302,7 +314,8 @@ class Inventory(db.Model, PersistentBase):
             ) from key_error
         except TypeError as type_error:
             raise DataValidationError(
-                "Invalid Inventory: body of request contained bad or no data" + str(type_error)
+                "Invalid Inventory: body of request contained bad or no data"
+                + str(type_error)
             ) from type_error
         return self
 
@@ -317,7 +330,6 @@ class Inventory(db.Model, PersistentBase):
         product.deserialize(data)
         self.products.append(product)
         product.create()
-
 
     ##################################################
     # CLASS METHODS

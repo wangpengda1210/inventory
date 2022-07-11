@@ -71,7 +71,7 @@ def method_not_supported(error):
 
 
 @app.errorhandler(status.HTTP_409_CONFLICT)
-def method_not_supported(error):
+def data_conflict(error):
     """Handles unsupported HTTP methods with 409_CONFLICT"""
     message = str(error)
     app.logger.warning(message)
@@ -113,6 +113,7 @@ def internal_server_error(error):
         ),
         status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
+
 
 @app.errorhandler(status.HTTP_409_CONFLICT)
 def conflict_error(error):
