@@ -66,7 +66,7 @@ class TestInventory(unittest.TestCase):
         """It should Create an inventory and assert that it exists"""
         fake_inventory = InventoryFactory()
         inventory = Inventory(
-            product_id=fake_inventory.product_id,
+            product_id = fake_inventory.product_id,
             condition = fake_inventory.condition,
             restock_level = fake_inventory.restock_level,
             quantity = fake_inventory.quantity
@@ -76,7 +76,6 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(inventory.condition, fake_inventory.condition)
         self.assertEqual(inventory.quantity, fake_inventory.quantity)
         self.assertEqual(inventory.restock_level, fake_inventory.restock_level)
-        # inventory.create()
 
     def test_add_a_inventory(self):
         """It should Create an inventory and add it to the database"""
@@ -95,7 +94,6 @@ class TestInventory(unittest.TestCase):
         Step1 create instance of inventory
         Step2 list all inventory
         Step3 query with inventory_id
-        
         """
         inventory = InventoryFactory()
         inventory.create()
@@ -106,10 +104,10 @@ class TestInventory(unittest.TestCase):
         self.assertIsNotNone(inventory_id)
         found_inventory = Inventory.find(inventory_id)
         self.assertEqual(found_inventory.inventory_id, inventory_id)
-        self.assertEqual(found_inventory.product_id,inventory.product_id)
-        self.assertEqual(found_inventory.condition,inventory.condition)
-        self.assertEqual(found_inventory.restock_level,inventory.restock_level)
-        self.assertEqual(found_inventory.quantity,inventory.quantity)
+        self.assertEqual(found_inventory.product_id, inventory.product_id)
+        self.assertEqual(found_inventory.condition, inventory.condition)
+        self.assertEqual(found_inventory.restock_level, inventory.restock_level)
+        self.assertEqual(found_inventory.quantity, inventory.quantity)
 
     def test_update_inventory(self):
         """It should Update an inventory"""
@@ -166,8 +164,6 @@ class TestInventory(unittest.TestCase):
     def test_serialize_an_inventory(self):
         """It should Serialize an inventory"""
         inventory = InventoryFactory()
-        # product = ProductFactory()
-        # inventory.products.append(product)
         serial_inventory = inventory.serialize()
         self.assertEqual(serial_inventory["inventory_id"], inventory.inventory_id)
         self.assertEqual(serial_inventory["product_id"], inventory.product_id)
@@ -178,17 +174,13 @@ class TestInventory(unittest.TestCase):
     def test_deserialize_an_inventory(self):
         """It should Deserialize an inventory"""
         inventory = InventoryFactory()
-        # inventory.products.append(ProductFactory())
-        
         inventory.create()
-
         serial_inventory = inventory.serialize()
         print(serial_inventory)
-        # products = serial_inventory["products"]
         # for type consideration(deserialize is for json data which is only string, but the
         # creation via InventoryFactory, data in some fields is Enum.)
-        serial_inventory ["condition"] = serial_inventory ["condition"].name
-        serial_inventory ["restock_level"] = serial_inventory ["restock_level"].name
+        serial_inventory["condition"] = serial_inventory["condition"].name
+        serial_inventory["restock_level"] = serial_inventory["restock_level"].name
         # if not, the next step deserialize() would err.
         new_inventory = Inventory()
         new_inventory.deserialize(serial_inventory)
@@ -214,8 +206,6 @@ class TestInventory(unittest.TestCase):
         for _ in range(5):
             inventory = InventoryFactory()
             inventory.create()
-            # product = ProductFactory()
-            # inventory.products.append(product)
         # eg. check OPEN_BOX
         # check that OPEN_BOX products only exist in open_box_cll but no in the remaining cll
         open_box_cll = Inventory.find_by_condition(Condition.OPEN_BOX).all()
@@ -230,8 +220,6 @@ class TestInventory(unittest.TestCase):
         for _ in range(5):
             inventory = InventoryFactory()
             inventory.create()
-            # product = ProductFactory()
-            # inventory.products.append(product)
         # eg. check LOW
         # check that LOW stock level products only exist in low_cll but not in the remaining cll
         low_stock_cll = Inventory.find_by_restock_level(StockLevel.LOW).all()
@@ -246,8 +234,6 @@ class TestInventory(unittest.TestCase):
         for _ in range(5):
             inventory = InventoryFactory()
             inventory.create()
-            # product = ProductFactory()
-            # inventory.products.append(product)
         # check LOW and OPEN_BOX
         # check that filtered products only exist in open_box_and_low_cll
         # but not in the remaining cll
@@ -271,22 +257,19 @@ class TestInventory(unittest.TestCase):
     def test_duplicate_compound_keys(self):
         fake_inventory = InventoryFactory()
         inventory_1 = Inventory(
-            product_id=fake_inventory.product_id,
+            product_id = fake_inventory.product_id,
             condition = fake_inventory.condition,
             restock_level = fake_inventory.restock_level,
             quantity = fake_inventory.quantity
         )
         inventory_1.create()
         inventory_2 = Inventory(
-            product_id=fake_inventory.product_id,
+            product_id = fake_inventory.product_id,
             condition = fake_inventory.condition,
             restock_level = fake_inventory.restock_level,
             quantity = fake_inventory.quantity
         )
         self.assertRaises(DuplicateKeyValueError,inventory_2.create)
-
-
-
 
 
 ##############################

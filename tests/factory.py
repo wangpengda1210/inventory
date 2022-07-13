@@ -15,7 +15,7 @@
 """
 Test Factory to make fake objects for testing
 """
-import random
+# import random
 import factory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger
 from service.models import Inventory,  Condition, StockLevel

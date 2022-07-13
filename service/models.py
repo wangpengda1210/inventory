@@ -22,6 +22,7 @@ def init_db(app):
 class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
 
+
 class DuplicateKeyValueError(Exception):
     """Used for inserting records with duplicate keys error in create() function"""
 
@@ -58,7 +59,8 @@ class PersistentBase:
         """
         # logger.info("Creating %s", self.name)
         logger.info("Creating")
-        self.id = None  # id must be none to generate next primary key
+        # id must be none to generate next primary key
+        self.id = None
         try: 
 
             db.session.add(self)
@@ -70,9 +72,6 @@ class PersistentBase:
                 raise DuplicateKeyValueError(
                     "duplicate key value violates unique constraint unique_constraint_productid_condition"
                 )
-
-
-
 
     def update(self):
         """
@@ -108,10 +107,11 @@ class PersistentBase:
         """Finds a record by it's ID"""
         logger.info("Processing lookup for id %s ...", by_id)
         return cls.query.get(by_id)
-        
+
 ######################################################################
 #  I N V E N T O R Y   M O D E L
 ######################################################################
+
 class Inventory(db.Model, PersistentBase):
     """
     Class that represents a Inventory
@@ -119,8 +119,7 @@ class Inventory(db.Model, PersistentBase):
     Provide a one-to-one relationship between an inventory and its product_id,condition,
     restock level and number.
     """
-    app=None
-
+    app = None
     # __tablename__ = "inventory"
     product_id = db.Column(db.Integer, unique=True, nullable=False)
     condition = db.Column(
@@ -132,12 +131,11 @@ class Inventory(db.Model, PersistentBase):
     )
 
     quantity = db.Column(db.Integer, nullable=False, default=0)
-    inventory_id= db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
+    inventory_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
 
     __table_args__ = (
-        db.UniqueConstraint('product_id','condition',name='unique_constraint_productid_condition'),
+        db.UniqueConstraint('product_id', 'condition', name='unique_constraint_productid_condition'),
     )
-
 
     def __repr__(self):
         return (f"<Inventory_id = [{self.inventory_id}]"
@@ -245,10 +243,6 @@ class Inventory(db.Model, PersistentBase):
         return cls.query.filter(
             cls.restock_level == restock_level, cls.condition == condition
         )
-
-
-
-
 #     ##################################################
 #     # CLASS METHODS
 #     ##################################################

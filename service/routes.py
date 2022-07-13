@@ -3,17 +3,21 @@ My Service
 
 Describe what your service does here
 """
-from flask import jsonify, request, url_for, make_response, abort
+
 
 # For this example we'll use SQLAlchemy, a popular ORM that supports a
 # variety of backends including SQLite, MySQL, and PostgreSQL
-from service.models import Inventory, DataValidationError
+
+# ######################################################################
+# # IMPORT DEPENDENCIES
+# ######################################################################
+
+# from flask import jsonify, request, url_for, make_response, abort
+# from service.models import Inventory, DataValidationError
 # from service.models import Products
-
-from .utils import status  # HTTP Status Codes
-
+# from .utils import status  # HTTP Status Codes
 # Import Flask application
-from . import app
+# from . import app
 
 # ######################################################################
 # # GET INDEX
