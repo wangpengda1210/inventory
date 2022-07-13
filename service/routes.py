@@ -7,7 +7,8 @@ from flask import jsonify, request, url_for, make_response, abort
 
 # For this example we'll use SQLAlchemy, a popular ORM that supports a
 # variety of backends including SQLite, MySQL, and PostgreSQL
-from service.models import Inventory, Product, DataValidationError
+from service.models import Inventory, DataValidationError
+# from service.models import Products
 
 from .utils import status  # HTTP Status Codes
 
