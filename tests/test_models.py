@@ -66,10 +66,10 @@ class TestInventory(unittest.TestCase):
         """It should Create an inventory and assert that it exists"""
         fake_inventory = InventoryFactory()
         inventory = Inventory(
-            product_id = fake_inventory.product_id,
-            condition = fake_inventory.condition,
-            restock_level = fake_inventory.restock_level,
-            quantity = fake_inventory.quantity
+            product_id=fake_inventory.product_id,
+            condition=fake_inventory.condition,
+            restock_level=fake_inventory.restock_level,
+            quantity=fake_inventory.quantity
         )
         self.assertIsNone(inventory.inventory_id)
         self.assertIsNotNone(inventory)
@@ -257,19 +257,19 @@ class TestInventory(unittest.TestCase):
     def test_duplicate_compound_keys(self):
         fake_inventory = InventoryFactory()
         inventory_1 = Inventory(
-            product_id = fake_inventory.product_id,
-            condition = fake_inventory.condition,
-            restock_level = fake_inventory.restock_level,
-            quantity = fake_inventory.quantity
+            product_id=fake_inventory.product_id,
+            condition=fake_inventory.condition,
+            restock_level=fake_inventory.restock_level,
+            quantity=fake_inventory.quantity
         )
         inventory_1.create()
         inventory_2 = Inventory(
-            product_id = fake_inventory.product_id,
-            condition = fake_inventory.condition,
-            restock_level = fake_inventory.restock_level,
-            quantity = fake_inventory.quantity
+            product_id=fake_inventory.product_id,
+            condition=fake_inventory.condition,
+            restock_level=fake_inventory.restock_level,
+            quantity=fake_inventory.quantity
         )
-        self.assertRaises(DuplicateKeyValueError,inventory_2.create)
+        self.assertRaises(DuplicateKeyValueError, inventory_2.create)
 
 
 ##############################

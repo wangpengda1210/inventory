@@ -61,8 +61,7 @@ class PersistentBase:
         logger.info("Creating")
         # id must be none to generate next primary key
         self.id = None
-        try: 
-
+        try:
             db.session.add(self)
             db.session.commit()
         except IntegrityError as e:
@@ -111,6 +110,7 @@ class PersistentBase:
 ######################################################################
 #  I N V E N T O R Y   M O D E L
 ######################################################################
+
 
 class Inventory(db.Model, PersistentBase):
     """
