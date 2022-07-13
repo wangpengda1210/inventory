@@ -6,7 +6,7 @@ All of the models are stored in this module
 import logging
 from enum import Enum, IntEnum
 from flask_sqlalchemy import SQLAlchemy
-
+from sqlalchemy.exc import IntegrityError
 
 logger = logging.getLogger("flask.app")
 
@@ -21,6 +21,9 @@ def init_db(app):
 
 class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
+
+class DuplicateKeyValueError(Exception):
+    """Used for inserting records with duplicate keys error in create() function"""
 
 
 class Condition(IntEnum):
@@ -56,8 +59,20 @@ class PersistentBase:
         # logger.info("Creating %s", self.name)
         logger.info("Creating")
         self.id = None  # id must be none to generate next primary key
-        db.session.add(self)
-        db.session.commit()
+        try: 
+
+            db.session.add(self)
+            db.session.commit()
+        except IntegrityError as e:
+            error = str(e.orig)
+            db.session.rollback()
+            if "duplicate key value violates unique constraint" in error:
+                raise DuplicateKeyValueError(
+                    "duplicate key value violates unique constraint unique_constraint_productid_condition"
+                )
+
+
+
 
     def update(self):
         """
