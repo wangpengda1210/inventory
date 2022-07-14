@@ -82,12 +82,12 @@ class PersistentBase:
         """
         Updates a record to the database
         """
-        logger.info("Updating %s", self.id)
+        logger.info("Updating %s", self.inventory_id)
         db.session.commit()
 
     def delete(self):
         """Removes a record from the data store"""
-        logger.info("Deleting inventory_id:%s" % self.id)
+        logger.info("Deleting inventory_id:%s" % self.inventory_id)
         db.session.delete(self)
         db.session.commit()
 
