@@ -5,7 +5,7 @@ This module creates and configures the Flask app and sets up the logging
 and SQL database
 """
 import sys
-import logging
+import logging  # noqa: F401 E402
 from flask import Flask
 from .utils import log_handlers
 
@@ -14,8 +14,11 @@ app = Flask(__name__)
 app.config.from_object("config")
 
 # Dependencies require we import the routes AFTER the Flask app is created
-from service import routes, models # pylint: disable=wrong-import-position, wrong-import-order
-from .utils import error_handlers  # pylint: disable=wrong-import-position
+from service import (  # noqa: F401 E402
+    routes,
+    models,
+)  # pylint: disable=wrong-import-position, wrong-import-order
+from .utils import error_handlers  # pylint: disable=wrong-import-position  # noqa: F401 E402
 
 # Set up logging for production
 log_handlers.init_logging(app, "gunicorn.error")
