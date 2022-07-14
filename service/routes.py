@@ -12,12 +12,11 @@ Describe what your service does here
 # # IMPORT DEPENDENCIES
 # ######################################################################
 
-# from flask import jsonify, request, url_for, make_response, abort
-# from service.models import Inventory, DataValidationError
-# from service.models import Products
-# from .utils import status  # HTTP Status Codes
+from flask import jsonify, request, url_for, make_response, abort
+from service.models import Inventory, DataValidationError
+from .utils import status  # HTTP Status Codes
 # Import Flask application
-# from . import app
+from . import app
 
 # ######################################################################
 # # GET INDEX
@@ -62,22 +61,22 @@ Describe what your service does here
 # # ######################################################################
 # # # RETRIEVE AN INVENTORY   (#story 4)
 # # ######################################################################
-# @app.route("/inventories/<int:inventory_id>", methods=["GET"])
-# def get_inventory(inventory_id):
-#     """
-#     Retrieve a single Inventory
+@app.route("/inventories/<int:inventory_id>", methods=["GET"])
+def get_inventory(inventory_id):
+    """
+    Retrieve a single Inventory
 
-#     This endpoint will return an Inventory based on it's id
-#     """
-#     app.logger.info("Request for Inventory with id: %s", inventory_id)
-#     inventory = Inventory.find(inventory_id)
-#     if not inventory:
-#         abort(
-#             status.HTTP_404_NOT_FOUND,
-#             f"Inventory with id '{inventory_id}' could not be found.",
-#         )
+    This endpoint will return an Inventory based on it's id
+    """
+    app.logger.info("Request for Inventory with id: %s", inventory_id)
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' could not be found.",
+        )
 
-#     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+    return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
 # #####################################################################
@@ -262,13 +261,13 @@ Describe what your service does here
 # ######################################################################
 
 
-# def check_content_type(media_type):
-#     """Checks that the media type is correct"""
-#     content_type = request.headers.get("Content-Type")
-#     if content_type and content_type == media_type:
-#         return
-#     app.logger.error("Invalid Content-Type: %s", content_type)
-#     abort(
-#         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-#         f"Content-Type must be {media_type}",
-#     )
+def check_content_type(media_type):
+    """Checks that the media type is correct"""
+    content_type = request.headers.get("Content-Type")
+    if content_type and content_type == media_type:
+        return
+    app.logger.error("Invalid Content-Type: %s", content_type)
+    abort(
+        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+        f"Content-Type must be {media_type}",
+    )

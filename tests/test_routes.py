@@ -5,70 +5,69 @@
 #   nosetests -v --with-spec --spec-color
 #   coverage report -m
 # """
-# import os
-# import logging
-# from unittest import TestCase
-# from tests.factory import InventoryFactory, ProductFactory, Condition
-# from service import app
-# from service.models import db, Inventory, init_db, Product
-# from service.utils import status  # HTTP Status Codes
+import os
+import logging
+from unittest import TestCase
+from tests.factory import InventoryFactory, Condition
+from service import app
+from service.models import db, Inventory, init_db
+from service.utils import status  # HTTP Status Codes
 
-# DATABASE_URI = os.getenv(
-#     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres"
-# )
+DATABASE_URI = os.getenv(
+    "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres"
+)
 
-# BASE_URL = "/inventories"
+BASE_URL = "/inventories"
 
 
 # ######################################################################
 # #  R O U T E   T E S T   C A S E S
 # ######################################################################
-# class TestInventoryServer(TestCase):
-#     """REST API Server Tests"""
+class TestInventoryServer(TestCase):
+    """REST API Server Tests"""
 
-#     @classmethod
-#     def setUpClass(cls):
-#         """This runs once before the entire test suite"""
-#         app.config["TESTING"] = True
-#         app.config["DEBUG"] = False
-#         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
-#         app.logger.setLevel(logging.CRITICAL)
-#         init_db(app)
+    @classmethod
+    def setUpClass(cls):
+        """This runs once before the entire test suite"""
+        app.config["TESTING"] = True
+        app.config["DEBUG"] = False
+        app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+        app.logger.setLevel(logging.CRITICAL)
+        init_db(app)
 
-#     @classmethod
-#     def tearDownClass(cls):
-#         """This runs once after the entire test suite"""
+    @classmethod
+    def tearDownClass(cls):
+        """This runs once after the entire test suite"""
 
-#     def setUp(self):
-#         """This runs before each test"""
-#         db.session.query(Product).delete()
-#         db.session.query(Inventory).delete()  # clean up the last tests
-#         db.session.commit()
-#         self.client = app.test_client()
+    def setUp(self):
+        """This runs before each test"""
+        db.session.query(Inventory).delete()  # clean up the last tests
+        db.session.commit()
+        self.client = app.test_client()
 
-#     def tearDown(self):
-#         """This runs after each test"""
-#         db.session.remove()
+    def tearDown(self):
+        """This runs after each test"""
+        db.session.remove()
 
 #     ######################################################################
 #     #  H E L P E R   M E T H O D S
 #     ######################################################################
 
-#     def _create_inventories(self, count):
-#         """Factory method to create inventories in bulk"""
-#         inventories = []
-#         for _ in range(count):
-#             inventory = InventoryFactory()
-#             resp = self.client.post(BASE_URL, json=inventory.serialize())
-#             self.assertEqual(
-#                 resp.status_code,
-#                 status.HTTP_201_CREATED,
-#                 "Could not create test inventory",
-#             )
-#             new_inventory = resp.get_json()
-#             inventory.id = new_inventory["id"]
-#             inventories.append(inventory)
-#         return inventories
+    def _create_inventories(self, count):
+        """Factory method to create inventories in bulk"""
+        inventories = []
+        for _ in range(count):
+            inventory = InventoryFactory()
+            resp = self.client.post(BASE_URL, json=inventory.serialize())
+            self.assertEqual(
+                resp.status_code,
+                status.HTTP_201_CREATED,
+                "Could not create test inventory",
+            )
+            new_inventory = resp.get_json()
+            inventory.id = new_inventory["id"]
+            inventories.append(inventory)
+        return inventories
 
 #     def _generate_inventories_with_products(self, num_inventories, num_products):
 #         """Factory method to create inventories with products in bulk"""
@@ -114,16 +113,20 @@
 #         products = data[0]["products"]
 #         self.assertEqual(len(products), 2)
 
-#     def test_read_inventory(self):
-#         """It should Read a single Inventory"""
-#         # get the id of an Inventory
-#         inventory = self._create_inventories(1)[0]
-#         resp = self.client.get(
-#             f"{BASE_URL}/{inventory.id}", content_type="application/json"
-#         )
-#         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-#         data = resp.get_json()
-#         self.assertEqual(data["name"], inventory.name)
+    def test_read_inventory(self):
+        """It should Read a single Inventory"""
+        # get the id of an Inventory
+        inventory = self._create_inventories(1)[0]
+        resp = self.client.get(
+            f"{BASE_URL}/{inventory.inventory_id}", content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        # Check all the attributes matches
+        self.assertEqual(data["quantity", inventory.quantity])
+        self.assertEqual(data["product_id", inventory.product_id])
+        self.assertEqual(data["condition", inventory.condition])
+        self.assertEqual(data["restock_level", inventory.restock_level])
 
 #     def test_create_inventory(self):
 #         """It should Create an Inventory"""
@@ -301,10 +304,10 @@
 #         resp = self.client.post(BASE_URL, data="Wrong Content Type")
 #         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-#     def test_read_inventory_not_found(self):
-#         """It should not Read the Inventory when it is not found"""
-#         resp = self.client.get(f"{BASE_URL}/0")
-#         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+    def test_read_inventory_not_found(self):
+        """It should not Read the Inventory when it is not found"""
+        resp = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
 #     def test_read_product_not_found(self):
 #         """It should not Read the Product when it is not found"""
