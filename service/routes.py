@@ -141,19 +141,17 @@ def create_inventories():  # noqa: C901
 # # ######################################################################
 # # # DELETE AN INVENTORY   (#story 9)
 # # ######################################################################
-# @app.route("/inventories/<int:inventory_id>", methods=["DELETE"])
-# def delete_inventory(inventory_id):
-#     """
-#     Delete an Inventory
-#     This endpoint will delete an Inventory based id specified in the path
-#     """
-#     app.logger.info("Request to delete inventory with id: %s", inventory_id)
-#     inventory = Inventory.find(inventory_id)
-#     if inventory:
-#         for product in Product.find_by_inventory_id(inventory_id):
-#             product.delete()
-#         inventory.delete()
-#     return make_response("", status.HTTP_204_NO_CONTENT)
+@app.route("/inventories/<int:inventory_id>", methods=["DELETE"])
+def delete_inventory(inventory_id):
+    """
+    Delete an Inventory
+    This endpoint will delete an Inventory based id specified in the path
+    """
+    app.logger.info("Request to delete inventory with id: %s", inventory_id)
+    inventory = Inventory.find(inventory_id)
+    if inventory:
+        inventory.delete()
+    return make_response("", status.HTTP_204_NO_CONTENT)
 
 
 # # #####################################################################

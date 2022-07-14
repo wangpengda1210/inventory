@@ -176,23 +176,23 @@ class TestInventoryServer(TestCase):
 #         updated = resp.get_json()
 #         self.assertEqual(updated["name"], "James Bond")
 
-#     def test_delete_inventory(self):
-#         """It should Delete an Inventory"""
-#         # generate fake request json
-#         requests_json = self._generate_inventories_with_products(1, 1)
+    def test_delete_inventory(self):
+        """It should Delete an Inventory"""
+        # generate fake request json
+        requests_json = self._generate_inventories_non_duplicate(1, 1)
 
-#         # create
-#         resp = self.client.post(BASE_URL, json=requests_json[0])
-#         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # create
+        resp = self.client.post(BASE_URL, json=requests_json[0])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
-#         # delete
-#         inventory_json = resp.get_json()
-#         inventory_id = inventory_json["id"]
-#         resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
-#         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        # delete
+        inventory_json = resp.get_json()
+        inventory_id = inventory_json["inventory_id"]
+        resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
-#         inventories = Inventory.all()
-#         self.assertEqual(len(inventories), 0)
+        inventories = Inventory.all()
+        self.assertEqual(len(inventories), 0)
 
 #     def test_read_product(self):
 #         """It should Read a group of Products (with same condition) from an Inventory"""
@@ -357,15 +357,12 @@ class TestInventoryServer(TestCase):
 #         )
 #         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
-#     def test_delete_not_exist_inventory(self):
-#         """It should return 204 when Deleting not exist inventory"""
-#         # generate fake request json
-#         inventory_json = self._generate_inventories_with_products(1, 1)[0]
-
-#         # delete
-#         inventory_id = inventory_json["id"]
-#         resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
-#         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+    def test_delete_not_exist_inventory(self):
+        """It should return 204 when Deleting not exist inventory"""
+        # delete
+        inventory_id = 1
+        resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
     # def test_methods_not_allowed(self):
     #     """
