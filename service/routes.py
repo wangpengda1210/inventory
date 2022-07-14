@@ -13,7 +13,7 @@ Describe what your service does here
 # ######################################################################
 
 from flask import jsonify, request, url_for, make_response, abort
-from service.models import Inventory, DataValidationError
+from service.models import Inventory
 from .utils import status  # HTTP Status Codes
 # Import Flask application
 from . import app

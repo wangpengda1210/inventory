@@ -30,10 +30,12 @@ def request_validation_error(error):
     """Handles Value Errors from bad data"""
     return bad_request(error)
 
+
 @app.errorhandler(DuplicateKeyValueError)
 def duplicate_key_value_error(error):
     """Handles Value Errors from bad data"""
     return data_conflict(error)
+
 
 @app.errorhandler(status.HTTP_400_BAD_REQUEST)
 def bad_request(error):

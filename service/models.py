@@ -71,7 +71,7 @@ class PersistentBase:
                 raise DuplicateKeyValueError(
                     "duplicate key value violates unique constraint unique_constraint_productid_condition"
                 )
-        except (DataError,StatementError) as data_error:
+        except (DataError, StatementError) as data_error:
             db.session.rollback()
             raise DataValidationError(
                 "Invalid Product: body of request contained bad or no data"
@@ -170,8 +170,8 @@ class Inventory(db.Model, PersistentBase):
         """
         try:
             self.product_id = data["product_id"]
-            self.condition = data["condition"] # create enum from string
-            self.restock_level = data["restock_level"] # create enum from string
+            self.condition = data["condition"]  # create enum from string
+            self.restock_level = data["restock_level"]  # create enum from string
             self.quantity = data["quantity"]
 
         except KeyError as key_error:
@@ -183,7 +183,6 @@ class Inventory(db.Model, PersistentBase):
                 "Invalid Product: body of request contained bad or no data"
                 + str(type_error)
             ) from type_error
-        
         return self
 
     ##################################################
