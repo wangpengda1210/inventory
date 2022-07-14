@@ -12,12 +12,11 @@ Describe what your service does here
 # # IMPORT DEPENDENCIES
 # ######################################################################
 
-# from flask import jsonify, request, url_for, make_response, abort
-# from service.models import Inventory, DataValidationError
-# from service.models import Products
-# from .utils import status  # HTTP Status Codes
+from flask import jsonify, request, url_for, make_response, abort
+from service.models import Inventory, DataValidationError
+from .utils import status  # HTTP Status Codes
 # Import Flask application
-# from . import app
+from . import app
 
 # ######################################################################
 # # GET INDEX
@@ -36,27 +35,27 @@ Describe what your service does here
 #     )
 
 
-# ######################################################################
-# # LIST ALL INVENTORIES
-# ######################################################################
-# @app.route("/inventories", methods=["GET"])
-# def list_inventories():
-#     """Returns all of the Inventories"""
-#     app.logger.info("Request for Inventory list")
-#     inventories = []
+######################################################################
+# LIST ALL INVENTORIES
+######################################################################
+@app.route("/inventories", methods=["GET"])
+def list_inventories():
+    """Returns all of the Inventories"""
+    app.logger.info("Request for Inventory list")
+    inventories = []
 
-#     # Comment out for future development
-#     # name = request.args.get("name")
-#     # if name:
-#     #     inventories = Inventory.find_by_name(name)
-#     # else:
-#     #     inventories = Inventory.all()
+    # Comment out for future development
+    # name = request.args.get("name")
+    # if name:
+    #     inventories = Inventory.find_by_name(name)
+    # else:
+    #     inventories = Inventory.all()
 
-#     # For now, just list all Inventories
-#     inventories = Inventory.all()
+    # For now, just list all Inventories
+    inventories = Inventory.all()
 
-#     results = [inventory.serialize() for inventory in inventories]
-#     return make_response(jsonify(results), status.HTTP_200_OK)
+    results = [inventory.serialize() for inventory in inventories]
+    return make_response(jsonify(results), status.HTTP_200_OK)
 
 
 # # ######################################################################
@@ -80,79 +79,31 @@ Describe what your service does here
 #     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
-# #####################################################################
-# # CREATE A NEW INVENTORY (#story 8)
-# #####################################################################
-# @app.route("/inventories", methods=["POST"])
-# def create_inventories():  # noqa: C901
-#     """
-#     Creates an Inventory
-#     This endpoint will create an inventory based the data in the body that is posted
-#     """
-#     app.logger.info("Request to create an Inventory")
-#     check_content_type("application/json")
+#####################################################################
+# CREATE A NEW INVENTORY (#story 8)
+#####################################################################
+@app.route("/inventories", methods=["POST"])
+def create_inventories():  # noqa: C901
+    """
+    Creates an Inventory
+    This endpoint will create an inventory based the data in the body that is posted
+    """
+    app.logger.info("Request to create an Inventory")
+    check_content_type("application/json")
 
-#     name = request.get_json().get("name")
-#     # If there is no name in json, request can't be process
-#     if not name:
-#         abort(
-#             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Inventory name was not provided."
-#         )
+    inventory = Inventory()
+    inventory.deserialize(request.get_json())
+    inventory.create()
 
-#     inventory = Inventory.find_by_name(name).first()
-#     products_list = request.get_json().get("products")
-#     inventory_created = False
-#     if inventory:
-#         inventory_products = Product.find_by_inventory_id(inventory.id).all()
-#         conditions = [p.condition for p in inventory_products]
-#         for product_data in products_list:
-#             condition = product_data.get("condition")
-#             if not condition:
-#                 abort(status.HTTP_400_BAD_REQUEST)
-#             if condition in conditions:
-#                 abort(
-#                     status.HTTP_409_CONFLICT,
-#                     f"Inventory '{name}' with condition '{condition}' already exists.",
-#                 )
-#     else:
-#         # create inventory
-#         inventory = Inventory()
-#         inventory.deserialize(request.get_json())
-#         inventory.create()
-#         inventory_created = True
+    app.logger.info("Inventory [%s] created.", inventory.id)
 
-#     # create products
-#     if products_list:
-#         created_products = []
-#         for product_data in products_list:
-#             try:
-#                 condition = product_data.get("condition")
-#                 if condition in created_products:
-#                     raise DataValidationError(
-#                         f"Inventory '{name}' with conflict condition '{condition}'."
-#                     )
-#                 inventory.create_product(product_data)
-#                 created_products.append(condition)
-#                 app.logger.info(
-#                     "Inventory [%s] with condition [%s] created.", name, condition
-#                 )
-#             except DataValidationError:
-#                 for product in Product.find_by_inventory_id(inventory.id):
-#                     if product.condition in created_products:
-#                         product.delete()
-#                 if inventory_created:
-#                     inventory.delete()
-#                 abort(status.HTTP_400_BAD_REQUEST)
-#     else:
-#         app.logger.info("Inventory [%s] created.", name)
-
-#     message = inventory.serialize()
-#     location_url = url_for(
-#         "create_inventories", inventory_id=inventory.id, _external=True
-#     )
-#     return make_response(
-#         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
-#     )
+    message = inventory.serialize()
+    location_url = url_for(
+        "create_inventories", inventory_id=inventory.id, _external=True
+    )
+    return make_response(
+        jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
+    )
 
 
 # # ######################################################################
@@ -262,13 +213,13 @@ Describe what your service does here
 # ######################################################################
 
 
-# def check_content_type(media_type):
-#     """Checks that the media type is correct"""
-#     content_type = request.headers.get("Content-Type")
-#     if content_type and content_type == media_type:
-#         return
-#     app.logger.error("Invalid Content-Type: %s", content_type)
-#     abort(
-#         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-#         f"Content-Type must be {media_type}",
-#     )
+def check_content_type(media_type):
+    """Checks that the media type is correct"""
+    content_type = request.headers.get("Content-Type")
+    if content_type and content_type == media_type:
+        return
+    app.logger.error("Invalid Content-Type: %s", content_type)
+    abort(
+        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+        f"Content-Type must be {media_type}",
+    )
