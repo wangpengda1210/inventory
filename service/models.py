@@ -6,6 +6,7 @@ All of the models are stored in this module
 import logging
 from enum import Enum, IntEnum
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
 
 logger = logging.getLogger("flask.app")
 
@@ -20,6 +21,10 @@ def init_db(app):
 
 class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
+
+
+class DuplicateKeyValueError(Exception):
+    """Used for inserting records with duplicate keys error in create() function"""
 
 
 class Condition(IntEnum):
@@ -54,9 +59,18 @@ class PersistentBase:
         """
         # logger.info("Creating %s", self.name)
         logger.info("Creating")
-        self.id = None  # id must be none to generate next primary key
-        db.session.add(self)
-        db.session.commit()
+        # id must be none to generate next primary key
+        self.id = None
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except IntegrityError as e:
+            error = str(e.orig)
+            db.session.rollback()
+            if "duplicate key value violates unique constraint" in error:
+                raise DuplicateKeyValueError(
+                    "duplicate key value violates unique constraint unique_constraint_productid_condition"
+                )
 
     def update(self):
         """
@@ -67,7 +81,7 @@ class PersistentBase:
 
     def delete(self):
         """Removes a record from the data store"""
-        logger.info("Deleting %s", self.id)
+        logger.info("Deleting inventory_id:%s" % self.id)
         db.session.delete(self)
         db.session.commit()
 
@@ -93,55 +107,64 @@ class PersistentBase:
         logger.info("Processing lookup for id %s ...", by_id)
         return cls.query.get(by_id)
 
+######################################################################
+#  I N V E N T O R Y   M O D E L
+######################################################################
 
-class Product(db.Model, PersistentBase):
+
+class Inventory(db.Model, PersistentBase):
     """
-    Class that represents a Product
+    Class that represents a Inventory
 
-    Provide a one-to-many relationship between an inventory and its condition,
+    Provide a one-to-one relationship between an inventory and its product_id,condition,
     restock level and number.
     """
-
-    # Table Schema
-    id = db.Column(db.Integer, primary_key=True)
+    app = None
+    # __tablename__ = "inventory"
+    product_id = db.Column(db.Integer, unique=True, nullable=False)
     condition = db.Column(
-        db.Enum(Condition), nullable=False, server_default=(Condition.UNKNOWN.name)
+        db.Enum(Condition), nullable=False,
+        server_default=(Condition.UNKNOWN.name)
     )
     restock_level = db.Column(
         db.Enum(StockLevel), nullable=False, server_default=(StockLevel.EMPTY.name)
     )
+
     quantity = db.Column(db.Integer, nullable=False, default=0)
-    inventory_id = db.Column(
-        db.Integer, db.ForeignKey("inventory.id", ondelete="CASCADE"), nullable=False
+    inventory_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint('product_id', 'condition', name='unique_constraint_productid_condition'),
     )
 
     def __repr__(self):
-        return (
-            f"<Product id=[{self.id}] "
-            f"condition=[{self.condition}] "
-            f"inventory[{self.inventory_id}]>"
-        )
+        return (f"<Inventory_id = [{self.inventory_id}]"
+                f"condition=[{self.condition}]"
+                f"product_id[{self.product_id}]"
+                # f"inventory[{self.inventory_id}]"
+                f"Product quantity=[{self.quantity}]>")
 
     def serialize(self) -> dict:
-        """Serializes a Product into a dictionary"""
+        """Serializes a Inventory into a dictionary"""
         return {
-            "id": self.id,
-            "condition": self.condition,
-            "restock_level": self.restock_level,
-            "quantity": self.quantity,
             "inventory_id": self.inventory_id,
-        }
+            "condition": self.condition,
+            "product_id": self.product_id,
+            "restock_level": self.restock_level,
+            "quantity": self.quantity
+            }
 
     def deserialize(self, data):
         """
-        Deserializes a Product from a dictionary
+        Deserializes a Inventory from a dictionary
 
         Args:
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.condition = data["condition"]  # create enum from string
-            self.restock_level = data["restock_level"]  # create enum from string
+            self.product_id = data["product_id"]
+            self.condition = Condition[data["condition"]]  # create enum from string
+            self.restock_level = StockLevel[data["restock_level"]]  # create enum from string
             self.quantity = data["quantity"]
 
         except KeyError as key_error:
@@ -173,19 +196,19 @@ class Product(db.Model, PersistentBase):
         logger.info("Processing condition query for %s ...", condition)
         return cls.query.filter(cls.condition == condition)
 
-    @classmethod
-    def find_by_inventory_id(cls, inventory_id) -> list:
-        """Returns all of the Products in a condition
+    # @classmethod
+    # def find_by_inventory_id(cls, inventory_id) -> list:
+    #     """Returns all of the Products in a condition
 
-        :param condition: the condition of the Products you want to match
-        :type condition: Enum
+    #     :param condition: the condition of the Products you want to match
+    #     :type condition: Enum
 
-        :return: a collection of Products in that condition
-        :rtype: list
+    #     :return: a collection of Products in that condition
+    #     :rtype: list
 
-        """
-        logger.info("Processing product query for %s ...", inventory_id)
-        return cls.query.filter(cls.inventory_id == inventory_id)
+    #     """
+    #     logger.info("Processing product query for %s ...", inventory_id)
+    #     return cls.query.filter(cls.inventory_id == inventory_id)
 
     @classmethod
     def find_by_restock_level(cls, restock_level: Enum) -> list:
@@ -220,97 +243,26 @@ class Product(db.Model, PersistentBase):
         return cls.query.filter(
             cls.restock_level == restock_level, cls.condition == condition
         )
+#     ##################################################
+#     # CLASS METHODS
+#     ##################################################
 
+#     @classmethod
+#     def find_by_name(cls, name):
+#         """Returns all Inventories with the given name
 
-######################################################################
-#  I N V E N T O R Y   M O D E L
-######################################################################
-class Inventory(db.Model, PersistentBase):
-    """
-    Class that represents a Inventory
+#         Args:
+#             name (string): the name of the Inventories you want to match
+#         """
+#         logger.info("Processing name query for %s ...", name)
+#         return cls.query.filter(cls.name == name)
 
-    This version uses a relational database for persistence which is hidden
-    from us by SQLAlchemy's object relational mappings (ORM)
-    """
+#     # @classmethod
+#     # def if_exists_by_name(cls, name):
+#     #     """Returns whether an inventory with the given name already created
 
-    app = None
-
-    # Table Schema
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(63))
-    products = db.relationship(
-        "Product", backref="inventory", passive_deletes=True, lazy=True
-    )
-
-    def __repr__(self):
-        return f"<Inventory {self.name} id=[{self.id}]>"
-
-    def serialize(self) -> dict:
-        """Serializes a Inventory into a dictionary"""
-        inventory = {
-            "id": self.id,
-            "name": self.name,
-            "products": [],
-        }
-        for product in self.products:
-            inventory["products"].append(product.serialize())
-        return inventory
-
-    def deserialize(self, data):
-        """
-        Deserializes a Inventory from a dictionary
-
-        Args:
-            data (dict): A dictionary containing the resource data
-        """
-        try:
-            self.name = data["name"]
-            # # handle inner list of products
-            # product_data = data.get("products")
-
-        except KeyError as key_error:
-            raise DataValidationError(
-                "Invalid Inventory: missing " + key_error.args[0]
-            ) from key_error
-        except TypeError as type_error:
-            raise DataValidationError(
-                "Invalid Inventory: body of request contained bad or no data"
-                + str(type_error)
-            ) from type_error
-        return self
-
-    def create_product(self, data):
-        """
-        Create an Inventory item from a dictionary
-
-        Args:
-            data (dict): A dictionary containing the resource data
-        """
-        product = Product()
-        product.deserialize(data)
-        self.products.append(product)
-        product.create()
-
-    ##################################################
-    # CLASS METHODS
-    ##################################################
-
-    @classmethod
-    def find_by_name(cls, name):
-        """Returns all Inventories with the given name
-
-        Args:
-            name (string): the name of the Inventories you want to match
-        """
-        logger.info("Processing name query for %s ...", name)
-        return cls.query.filter(cls.name == name)
-
-    # @classmethod
-    # def if_exists_by_name(cls, name):
-    #     """Returns whether an inventory with the given name already created
-
-    #     Args:
-    #         name (string): the name of the Inventories you want to match
-    #     """
-    #     logger.info("Processing existence query for %s ...", name)
-    #     return db.session.query(cls.query.filter(cls.name == name)).scalar()
+#     #     Args:
+#     #         name (string): the name of the Inventories you want to match
+#     #     """
+#     #     logger.info("Processing existence query for %s ...", name)
+#     #     return db.session.query(cls.query.filter(cls.name == name)).scalar()
