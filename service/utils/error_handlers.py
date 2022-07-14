@@ -18,7 +18,7 @@
 Module: error_handlers
 """
 from flask import jsonify
-from service.models import DataValidationError
+from service.models import DataValidationError, DuplicateKeyValueError
 from service import app
 from . import status
 
@@ -29,6 +29,12 @@ from . import status
 def request_validation_error(error):
     """Handles Value Errors from bad data"""
     return bad_request(error)
+
+
+@app.errorhandler(DuplicateKeyValueError)
+def duplicate_key_value_error(error):
+    """Handles Value Errors from bad data"""
+    return data_conflict(error)
 
 
 @app.errorhandler(status.HTTP_400_BAD_REQUEST)
@@ -112,19 +118,4 @@ def internal_server_error(error):
             message=message,
         ),
         status.HTTP_500_INTERNAL_SERVER_ERROR,
-    )
-
-
-@app.errorhandler(status.HTTP_409_CONFLICT)
-def conflict_error(error):
-    """Handles unexpected conflict error with HTTP_409_CONFLICT"""
-    message = str(error)
-    app.logger.error(message)
-    return (
-        jsonify(
-            status=status.HTTP_409_CONFLICT,
-            error="Conflict Error",
-            message=message,
-        ),
-        status.HTTP_409_CONFLICT,
     )
