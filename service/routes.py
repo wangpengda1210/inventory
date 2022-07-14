@@ -61,22 +61,22 @@ def list_inventories():
 # # ######################################################################
 # # # RETRIEVE AN INVENTORY   (#story 4)
 # # ######################################################################
-# @app.route("/inventories/<int:inventory_id>", methods=["GET"])
-# def get_inventory(inventory_id):
-#     """
-#     Retrieve a single Inventory
+@app.route("/inventories/<int:inventory_id>", methods=["GET"])
+def get_inventory(inventory_id):
+    """
+    Retrieve a single Inventory
 
-#     This endpoint will return an Inventory based on it's id
-#     """
-#     app.logger.info("Request for Inventory with id: %s", inventory_id)
-#     inventory = Inventory.find(inventory_id)
-#     if not inventory:
-#         abort(
-#             status.HTTP_404_NOT_FOUND,
-#             f"Inventory with id '{inventory_id}' could not be found.",
-#         )
+    This endpoint will return an Inventory based on it's id
+    """
+    app.logger.info("Request for Inventory with id: %s", inventory_id)
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' could not be found.",
+        )
 
-#     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+    return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
 #####################################################################

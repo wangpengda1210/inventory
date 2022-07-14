@@ -54,21 +54,21 @@ class TestInventoryServer(TestCase):
     #  H E L P E R   M E T H O D S
     ######################################################################
 
-#     def _create_inventories(self, count):
-#         """Factory method to create inventories in bulk"""
-#         inventories = []
-#         for _ in range(count):
-#             inventory = InventoryFactory()
-#             resp = self.client.post(BASE_URL, json=inventory.serialize())
-#             self.assertEqual(
-#                 resp.status_code,
-#                 status.HTTP_201_CREATED,
-#                 "Could not create test inventory",
-#             )
-#             new_inventory = resp.get_json()
-#             inventory.id = new_inventory["id"]
-#             inventories.append(inventory)
-#         return inventories
+    def _create_inventories(self, count):
+        """Factory method to create inventories in bulk"""
+        inventories = []
+        for _ in range(count):
+            inventory = InventoryFactory()
+            resp = self.client.post(BASE_URL, json=inventory.serialize())
+            self.assertEqual(
+                resp.status_code,
+                status.HTTP_201_CREATED,
+                "Could not create test inventory",
+            )
+            new_inventory = resp.get_json()
+            inventory.inventory_id = new_inventory['inventory_id']
+            inventories.append(inventory)
+        return inventories
 
     def _generate_inventories_non_duplicate(self, num_inventories, num_products):
         """
@@ -122,16 +122,22 @@ class TestInventoryServer(TestCase):
         # products = data[0]["products"]
         # self.assertEqual(len(products), 2)
 
-#     def test_read_inventory(self):
-#         """It should Read a single Inventory"""
-#         # get the id of an Inventory
-#         inventory = self._create_inventories(1)[0]
-#         resp = self.client.get(
-#             f"{BASE_URL}/{inventory.id}", content_type="application/json"
-#         )
-#         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-#         data = resp.get_json()
-#         self.assertEqual(data["name"], inventory.name)
+    def test_read_inventory(self):
+        """It should Read a single Inventory"""
+        # get the id of an Inventory
+        inventory = self._create_inventories(1)[0]
+        print(inventory)
+        resp = self.client.get(
+            f"{BASE_URL}/{inventory.inventory_id}", content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        # Check all the attributes matches
+        print(data)
+        self.assertEqual(data["quantity"], inventory.quantity)
+        self.assertEqual(data["product_id"], inventory.product_id)
+        self.assertEqual(data["condition"], inventory.condition)
+        self.assertEqual(data["restock_level"], inventory.restock_level)
 
     def test_create_inventory(self):
         """It should Create an Inventory"""
@@ -299,10 +305,10 @@ class TestInventoryServer(TestCase):
         resp = self.client.post(BASE_URL, data="Wrong Content Type")
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-#     def test_read_inventory_not_found(self):
-#         """It should not Read the Inventory when it is not found"""
-#         resp = self.client.get(f"{BASE_URL}/0")
-#         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+    def test_read_inventory_not_found(self):
+        """It should not Read the Inventory when it is not found"""
+        resp = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
 #     def test_read_product_not_found(self):
 #         """It should not Read the Product when it is not found"""
