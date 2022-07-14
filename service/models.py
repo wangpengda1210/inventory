@@ -94,7 +94,7 @@ class PersistentBase:
     @classmethod
     def init_db(cls, app):
         """Initializes the database session"""
-        app.logger.info("Initializing database")
+        logger.info("Initializing database")
         cls.app = app
         # This is where we initialize SQLAlchemy from the Flask app
         db.init_app(app)
