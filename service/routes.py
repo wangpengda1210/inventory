@@ -58,9 +58,9 @@ def list_inventories():
     return make_response(jsonify(results), status.HTTP_200_OK)
 
 
-# # ######################################################################
-# # # RETRIEVE AN INVENTORY   (#story 4)
-# # ######################################################################
+######################################################################
+# RETRIEVE AN INVENTORY   (#story 4)
+######################################################################
 @app.route("/inventories/<int:inventory_id>", methods=["GET"])
 def get_inventory(inventory_id):
     """
@@ -138,9 +138,9 @@ def create_inventories():  # noqa: C901
 #     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
-# # ######################################################################
-# # # DELETE AN INVENTORY   (#story 9)
-# # ######################################################################
+######################################################################
+# DELETE AN INVENTORY   (#story 9)
+######################################################################
 @app.route("/inventories/<int:inventory_id>", methods=["DELETE"])
 def delete_inventory(inventory_id):
     """
@@ -153,6 +153,20 @@ def delete_inventory(inventory_id):
         inventory.delete()
     return make_response("", status.HTTP_204_NO_CONTENT)
 
+######################################################################
+# DELETE ALL INVENTORIES (Action)
+######################################################################
+@app.route("/inventories/clear", methods=["DELETE"])
+def delete_all_inventories():
+    """
+    Delete all Inventories
+    This endpoint will delete all Inventories
+    """
+    app.logger.info("Request to delete all inventories")
+    inventories = Inventory.all()
+    for inventory in inventories:
+        inventory.delete()
+    return make_response("", status.HTTP_204_NO_CONTENT)
 
 # # #####################################################################
 # # # RETRIEVE A PRODUCT FROM AN INVENTORY (#story 4)

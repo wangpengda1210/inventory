@@ -126,14 +126,14 @@ class TestInventoryServer(TestCase):
         """It should Read a single Inventory"""
         # get the id of an Inventory
         inventory = self._create_inventories(1)[0]
-        print(inventory)
+        # print(inventory)
         resp = self.client.get(
             f"{BASE_URL}/{inventory.inventory_id}", content_type="application/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         # Check all the attributes matches
-        print(data)
+        # print(data)
         self.assertEqual(data["quantity"], inventory.quantity)
         self.assertEqual(data["product_id"], inventory.product_id)
         self.assertEqual(data["condition"], inventory.condition)
@@ -191,8 +191,28 @@ class TestInventoryServer(TestCase):
         resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
-        inventories = Inventory.all()
-        self.assertEqual(len(inventories), 0)
+        resp = self.client.get(BASE_URL)
+        data = resp.get_json()
+        # print(data)
+        self.assertEqual(data, [])
+
+    def test_delete_all_inventories(self):
+        """It should Delete all Inventories"""
+        # generate fake request json
+        requests_json = self._generate_inventories_non_duplicate(3, 3)
+
+        # create
+        for i in range(3*3):
+            resp = self.client.post(BASE_URL, json=requests_json[i])
+            self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # delete all
+        resp = self.client.delete(BASE_URL + "/clear")
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+        resp = self.client.get(BASE_URL)
+        data = resp.get_json()
+        self.assertEqual(data, [])
 
 #     def test_read_product(self):
 #         """It should Read a group of Products (with same condition) from an Inventory"""
@@ -362,6 +382,9 @@ class TestInventoryServer(TestCase):
         # delete
         inventory_id = 1
         resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+        resp = self.client.delete(BASE_URL + "/clear")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
     # def test_methods_not_allowed(self):
