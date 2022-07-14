@@ -148,8 +148,9 @@ class Inventory(db.Model, PersistentBase):
         return (f"<Inventory_id = [{self.inventory_id}]"
                 f"condition=[{Condition(self.condition).name}]"
                 f"product_id[{self.product_id}]"
+                f"quantity=[{self.quantity}]"
                 # f"inventory[{self.inventory_id}]"
-                f"Product quantity=[{StockLevel(self.restock_level).name}]>")
+                f"restock_level=[{StockLevel(self.restock_level).name}]>")
 
     def serialize(self) -> dict:
         """Serializes a Inventory into a dictionary"""

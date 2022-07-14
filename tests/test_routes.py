@@ -66,7 +66,7 @@ class TestInventoryServer(TestCase):
                 "Could not create test inventory",
             )
             new_inventory = resp.get_json()
-            inventory.id = new_inventory["id"]
+            inventory.inventory_id = new_inventory['inventory_id']
             inventories.append(inventory)
         return inventories
 
@@ -126,16 +126,18 @@ class TestInventoryServer(TestCase):
         """It should Read a single Inventory"""
         # get the id of an Inventory
         inventory = self._create_inventories(1)[0]
+        print(inventory)
         resp = self.client.get(
             f"{BASE_URL}/{inventory.inventory_id}", content_type="application/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         # Check all the attributes matches
-        self.assertEqual(data["quantity", inventory.quantity])
-        self.assertEqual(data["product_id", inventory.product_id])
-        self.assertEqual(data["condition", inventory.condition])
-        self.assertEqual(data["restock_level", inventory.restock_level])
+        print(data)
+        self.assertEqual(data["quantity"], inventory.quantity)
+        self.assertEqual(data["product_id"], inventory.product_id)
+        self.assertEqual(data["condition"], inventory.condition)
+        self.assertEqual(data["restock_level"], inventory.restock_level)
 
     def test_create_inventory(self):
         """It should Create an Inventory"""
