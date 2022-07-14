@@ -20,9 +20,9 @@ DATABASE_URI = os.getenv(
 BASE_URL = "/inventories"
 
 
-# ######################################################################
-# #  R O U T E   T E S T   C A S E S
-# ######################################################################
+######################################################################
+#  R O U T E   T E S T   C A S E S
+######################################################################
 class TestInventoryServer(TestCase):
     """REST API Server Tests"""
 
@@ -38,6 +38,7 @@ class TestInventoryServer(TestCase):
     @classmethod
     def tearDownClass(cls):
         """This runs once after the entire test suite"""
+        db.drop_all()
 
     def setUp(self):
         """This runs before each test"""
@@ -49,9 +50,9 @@ class TestInventoryServer(TestCase):
         """This runs after each test"""
         db.session.remove()
 
-#     ######################################################################
-#     #  H E L P E R   M E T H O D S
-#     ######################################################################
+    ######################################################################
+    #  H E L P E R   M E T H O D S
+    ######################################################################
 
     def _create_inventories(self, count):
         """Factory method to create inventories in bulk"""
@@ -69,17 +70,25 @@ class TestInventoryServer(TestCase):
             inventories.append(inventory)
         return inventories
 
-#     def _generate_inventories_with_products(self, num_inventories, num_products):
-#         """Factory method to create inventories with products in bulk"""
-#         inventories_json = []
-#         for __ in range(num_inventories):
-#             inventory = InventoryFactory()
-#             for _ in range(num_products):
-#                 product = ProductFactory()
-#                 inventory.products.append(product)
-#             inventories_json.append(inventory.serialize())
-
-#         return inventories_json
+    def _generate_inventories_non_duplicate(self, num_inventories, num_products):
+        """
+        Factory method to create inventories json with non duplicate conditions in bulk
+        Maximum number of products = number of possible conditions
+        """
+        inventories_json = []
+        for _ in range(num_inventories):
+            inventory = InventoryFactory()
+            inventory_json = inventory.serialize()
+            product_id = inventory_json["product_id"]
+            for i, condition in enumerate(Condition):
+                if i == num_products:
+                    break
+                inventory = InventoryFactory()
+                inventory_json = inventory.serialize()
+                inventory_json["product_id"] = product_id
+                inventory_json["condition"] = condition
+                inventories_json.append(inventory_json)
+        return inventories_json
 
 #     # ######################################################################
 #     # #  T E S T   H A P P Y   P A T H S
@@ -90,28 +99,28 @@ class TestInventoryServer(TestCase):
 #         resp = self.client.get("/")
 #         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-#     def test_list_inventory_list(self):
-#         """It should Get a list of Inventories"""
-#         # when no data, return []
-#         resp = self.client.get(BASE_URL)
-#         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-#         data = resp.get_json()
-#         self.assertEqual(data, [], "wrong response")
-#         # when there is 5 inventories, return 5 inventories
-#         # create fake data
-#         requests_json = self._generate_inventories_with_products(5, 2)
-#         successful_create_count = 0
-#         for i in range(5):
-#             resp = self.client.post(BASE_URL, json=requests_json[i])
-#             # self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-#             if resp.status_code == status.HTTP_201_CREATED:
-#                 successful_create_count += 1
-#         resp = self.client.get(BASE_URL)
-#         data = resp.get_json()
-#         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-#         self.assertEqual(len(data), successful_create_count)
-#         products = data[0]["products"]
-#         self.assertEqual(len(products), 2)
+    def test_list_inventory_list(self):
+        """It should Get a list of Inventories"""
+        # when no data, return []
+        resp = self.client.get(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data, [], "wrong response")
+        # when there is 5 inventories, return 5 inventories
+        # create fake data
+        requests_json = self._generate_inventories_non_duplicate(5, 2)
+        successful_create_count = 0
+        for i in range(5*2):
+            resp = self.client.post(BASE_URL, json=requests_json[i])
+            # self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+            if resp.status_code == status.HTTP_201_CREATED:
+                successful_create_count += 1
+        resp = self.client.get(BASE_URL)
+        data = resp.get_json()
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(data), successful_create_count)
+        # products = data[0]["products"]
+        # self.assertEqual(len(products), 2)
 
     def test_read_inventory(self):
         """It should Read a single Inventory"""
@@ -128,29 +137,24 @@ class TestInventoryServer(TestCase):
         self.assertEqual(data["condition", inventory.condition])
         self.assertEqual(data["restock_level", inventory.restock_level])
 
-#     def test_create_inventory(self):
-#         """It should Create an Inventory"""
-#         # generate fake request json
-#         requests_json = self._generate_inventories_with_products(2, 1)
-#         # create not conflict product in one inventory
-#         # set two inventories the same name
-#         requests_json[1]["name"] = requests_json[0]["name"]
-#         # set the condition different
-#         products_first = requests_json[0]["products"][0]
-#         products_first["condition"] = Condition.NEW
-#         products_second = requests_json[1]["products"][0]
-#         products_second["condition"] = Condition.OPEN_BOX
-#         # send the first request
-#         resp = self.client.post(BASE_URL, json=requests_json[0])
-#         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-#         # send the second request
-#         resp = self.client.post(BASE_URL, json=requests_json[1])
-#         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+    def test_create_inventory(self):
+        """It should Create an Inventory"""
+        # generate fake request json
+        requests_json = self._generate_inventories_non_duplicate(1, 2)
+        # create two inventories item with same product but different conditions
+        # send the first request
+        resp = self.client.post(BASE_URL, json=requests_json[0])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # send the second request
+        resp = self.client.post(BASE_URL, json=requests_json[1])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
-#         # create different inventory
-#         requests_json[0]["name"] += "_diff"
-#         resp = self.client.post(BASE_URL, json=requests_json[0])
-#         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # create with different product id
+        requests_json = self._generate_inventories_non_duplicate(1, 2)
+        resp = self.client.post(BASE_URL, json=requests_json[0])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        resp = self.client.post(BASE_URL, json=requests_json[1])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
 #     def test_update_inventory(self):
 #         """It should Update an Inventory"""
@@ -245,64 +249,59 @@ class TestInventoryServer(TestCase):
 #         self.assertEqual(updated_product["quantity"], 3000)
 #         self.assertEqual(updated_product["condition"], 3)
 
-#     # ######################################################################
-#     # #  T E S T   S A D   P A T H S
-#     # ######################################################################
+    ######################################################################
+    #  T E S T   S A D   P A T H S
+    ######################################################################
 
-#     def test_create_inventory_no_data(self):
-#         """It should not Create an Inventory with missing data"""
-#         resp = self.client.post(BASE_URL, json={})
-#         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+    def test_create_inventory_no_data(self):
+        """It should not Create an Inventory with missing data"""
+        resp = self.client.post(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-#     def test_create_inventory_conflict(self):
-#         """It should not Create two Inventory Product with same condition"""
-#         # generate fake json request
-#         requests_json = self._generate_inventories_with_products(2, 1)
+    def test_create_inventory_conflict(self):
+        """It should not Create two Inventory Product with same condition"""
+        # generate fake json request
+        requests_json = self._generate_inventories_non_duplicate(1, 2)
 
-#         # create not conflict product in one inventory
-#         # set two inventories the same name
-#         requests_json[1]["name"] = requests_json[0]["name"]
-#         # set the condition different
-#         products_first = requests_json[0]["products"][0]
-#         products_first["condition"] = Condition.NEW
-#         products_second = requests_json[1]["products"][0]
-#         products_second["condition"] = Condition.OPEN_BOX
-#         # send the first request
-#         resp = self.client.post(BASE_URL, json=requests_json[0])
-#         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-#         # send the second request
-#         resp = self.client.post(BASE_URL, json=requests_json[1])
-#         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # send the first request
+        resp = self.client.post(BASE_URL, json=requests_json[0])
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
-#         # set a conflict condition
-#         conflict_json = self._generate_inventories_with_products(1, 2)[0]
-#         conflict_products_first = conflict_json["products"][0]
-#         conflict_products_first["condition"] = Condition.USED
-#         conflict_products_second = conflict_json["products"][1]
-#         conflict_products_second["condition"] = Condition.OPEN_BOX
-#         conflict_json["name"] = requests_json[0]["name"]
-#         resp = self.client.post(BASE_URL, json=conflict_json)
-#         self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
+        # set a conflict condition
+        conflict_json = requests_json[1]
+        conflict_json["condition"] = requests_json[0]["condition"]
+        resp = self.client.post(BASE_URL, json=conflict_json)
+        self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
 
-#     def test_create_inventory_no_name(self):
-#         """It should not Create an Inventory with no inventory name"""
-#         requests_json = self._generate_inventories_with_products(1, 1)[0]
-#         requests_json.pop("name")
-#         resp = self.client.post(BASE_URL, json=requests_json)
-#         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+    def test_create_inventory_missing_data(self):
+        """It should not Create an Inventory with missing data"""
+        requests_json = self._generate_inventories_non_duplicate(1, 1)[0]
+        requests_json.pop("product_id")
+        resp = self.client.post(BASE_URL, json=requests_json)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-#     def test_create_inventory_bad_data(self):
-#         """It should not Create an Inventory Product with bad data"""
-#         # create inventory with incomplete product data
-#         requests_json = self._generate_inventories_with_products(1, 1)[0]
-#         requests_json["products"][0].pop("condition")
-#         resp = self.client.post(BASE_URL, json=requests_json)
-#         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        requests_json = self._generate_inventories_non_duplicate(1, 1)[0]
+        requests_json.pop("condition")
+        resp = self.client.post(BASE_URL, json=requests_json)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-#     def test_create_inventory_wrong_content_type(self):
-#         """It should not use content other than json to Create the Inventory"""
-#         resp = self.client.post(BASE_URL, data="Wrong Content Type")
-#         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+    def test_create_inventory_bad_data(self):
+        """It should not Create an Inventory Product with bad data"""
+        # create inventory with incomplete product data
+        requests_json = self._generate_inventories_non_duplicate(1, 1)[0]
+        requests_json["condition"] = 0
+        resp = self.client.post(BASE_URL, json=requests_json)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+        requests_json = self._generate_inventories_non_duplicate(1, 1)[0]
+        requests_json["quantity"] = "a"
+        resp = self.client.post(BASE_URL, json=requests_json)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_inventory_wrong_content_type(self):
+        """It should not use content other than json to Create the Inventory"""
+        resp = self.client.post(BASE_URL, data="Wrong Content Type")
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_read_inventory_not_found(self):
         """It should not Read the Inventory when it is not found"""
@@ -366,22 +365,22 @@ class TestInventoryServer(TestCase):
 #         resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
 #         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
-#     def test_methods_not_allowed(self):
-#         """
-#         It should not allow
-#         PUT/DELETE to /inventories
-#         POST to /inventories/<inventory_id>
-#         POST/DELETE to /inventories/<inventory_id>/products/<product_id>
-#         """
-#         resp = self.client.put(f"{BASE_URL}")
-#         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-#         resp = self.client.delete(f"{BASE_URL}")
-#         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    # def test_methods_not_allowed(self):
+    #     """
+    #     It should not allow
+    #     PUT/DELETE to /inventories
+    #     POST to /inventories/<inventory_id>
+    #     POST/DELETE to /inventories/<inventory_id>/products/<product_id>
+    #     """
+    #     resp = self.client.put(f"{BASE_URL}")
+    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    #     resp = self.client.delete(f"{BASE_URL}")
+    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-#         resp = self.client.post(f"{BASE_URL}/0")
-#         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    #     resp = self.client.post(f"{BASE_URL}/0")
+    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-#         resp = self.client.post(f"{BASE_URL}/0/products/0")
-#         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-#         resp = self.client.delete(f"{BASE_URL}/0/products/0")
-#         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    #     resp = self.client.post(f"{BASE_URL}/0/products/0")
+    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    #     resp = self.client.delete(f"{BASE_URL}/0/products/0")
+    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)

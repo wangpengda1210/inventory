@@ -176,11 +176,11 @@ class TestInventory(unittest.TestCase):
         inventory = InventoryFactory()
         inventory.create()
         serial_inventory = inventory.serialize()
-        print(serial_inventory)
+        # print(serial_inventory)
         # for type consideration(deserialize is for json data which is only string, but the
         # creation via InventoryFactory, data in some fields is Enum.)
-        serial_inventory["condition"] = serial_inventory["condition"].name
-        serial_inventory["restock_level"] = serial_inventory["restock_level"].name
+        # serial_inventory["condition"] = serial_inventory["condition"].name
+        # serial_inventory["restock_level"] = serial_inventory["restock_level"].name
         # if not, the next step deserialize() would err.
         new_inventory = Inventory()
         new_inventory.deserialize(serial_inventory)

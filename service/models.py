@@ -4,9 +4,9 @@ Models for Inventory
 All of the models are stored in this module
 """
 import logging
-from enum import Enum, IntEnum
+from enum import IntEnum
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DataError, StatementError
 
 logger = logging.getLogger("flask.app")
 
@@ -71,6 +71,12 @@ class PersistentBase:
                 raise DuplicateKeyValueError(
                     "duplicate key value violates unique constraint unique_constraint_productid_condition"
                 )
+        except (DataError, StatementError) as data_error:
+            db.session.rollback()
+            raise DataValidationError(
+                "Invalid Product: body of request contained bad or no data"
+                + str(data_error.args[0])
+            ) from data_error
 
     def update(self):
         """
@@ -119,13 +125,14 @@ class Inventory(db.Model, PersistentBase):
     Provide a one-to-one relationship between an inventory and its product_id,condition,
     restock level and number.
     """
-    app = None
+    # app = None
     # __tablename__ = "inventory"
-    product_id = db.Column(db.Integer, unique=True, nullable=False)
+    product_id = db.Column(db.Integer, nullable=False)
     condition = db.Column(
         db.Enum(Condition), nullable=False,
         server_default=(Condition.UNKNOWN.name)
     )
+
     restock_level = db.Column(
         db.Enum(StockLevel), nullable=False, server_default=(StockLevel.EMPTY.name)
     )
@@ -139,10 +146,10 @@ class Inventory(db.Model, PersistentBase):
 
     def __repr__(self):
         return (f"<Inventory_id = [{self.inventory_id}]"
-                f"condition=[{self.condition}]"
+                f"condition=[{Condition(self.condition).name}]"
                 f"product_id[{self.product_id}]"
                 # f"inventory[{self.inventory_id}]"
-                f"Product quantity=[{self.quantity}]>")
+                f"Product quantity=[{StockLevel(self.restock_level).name}]>")
 
     def serialize(self) -> dict:
         """Serializes a Inventory into a dictionary"""
@@ -163,8 +170,8 @@ class Inventory(db.Model, PersistentBase):
         """
         try:
             self.product_id = data["product_id"]
-            self.condition = Condition[data["condition"]]  # create enum from string
-            self.restock_level = StockLevel[data["restock_level"]]  # create enum from string
+            self.condition = data["condition"]  # create enum from string
+            self.restock_level = data["restock_level"]  # create enum from string
             self.quantity = data["quantity"]
 
         except KeyError as key_error:
@@ -183,7 +190,7 @@ class Inventory(db.Model, PersistentBase):
     ##################################################
 
     @classmethod
-    def find_by_condition(cls, condition: Enum) -> list:
+    def find_by_condition(cls, condition: IntEnum) -> list:
         """Returns all of the Products in a condition
 
         :param condition: the condition of the Products you want to match
@@ -211,7 +218,7 @@ class Inventory(db.Model, PersistentBase):
     #     return cls.query.filter(cls.inventory_id == inventory_id)
 
     @classmethod
-    def find_by_restock_level(cls, restock_level: Enum) -> list:
+    def find_by_restock_level(cls, restock_level: IntEnum) -> list:
         """Returns all of the Products in a restock_level
 
         :param restock_level: the restock_level of the Products you want to match
@@ -226,7 +233,7 @@ class Inventory(db.Model, PersistentBase):
 
     @classmethod
     def find_by_condition_and_restock_level(
-        cls, condition, restock_level: Enum
+        cls, condition, restock_level: IntEnum
     ) -> list:
         """Returns all of the Products in a restock_level under a certain condition
 
