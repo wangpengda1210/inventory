@@ -5,8 +5,10 @@ All of the models are stored in this module
 """
 import logging
 from enum import IntEnum
+import re
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError, DataError, StatementError
+from . import app
 
 logger = logging.getLogger("flask.app")
 
@@ -203,6 +205,50 @@ class Inventory(db.Model, PersistentBase):
         """
         logger.info("Processing condition query for %s ...", condition)
         return cls.query.filter(cls.condition == condition)
+
+    @classmethod
+    def find_by_attributes(cls, req_dict) -> list:
+        """Returns all of the products correspond to given request parameters
+
+        Args:
+            req_dict (MultiDict): dictionary of request parameters
+
+        Returns:
+            list: a collection of products correspond to given request parameters
+        """
+        app.logger.info("Processing query with parameters %s ...", str(req_dict))
+        filter_list = []
+        app.logger.info(req_dict)
+
+        req_product_id = req_dict.get('product_id')
+        req_condition = req_dict.get('condition')
+        req_restock_level = req_dict.get('restock_level')
+        req_quantity = req_dict.get('quantity')
+
+        # Add query parameters into filter list, ignore invalid params and illegal values
+        if req_product_id:
+            try:
+                filter_list.append(cls.product_id == int(req_product_id))
+            except ValueError:
+                app.logger.info("Ignore invalid product_id %s", str(req_product_id))
+        if req_condition:
+            try:
+                filter_list.append(cls.condition == Condition(int(req_condition)))
+            except ValueError:
+                app.logger.info("Ignore invalid condition %s", str(req_condition))
+        if req_restock_level:
+            try:
+                filter_list.append(cls.restock_level == StockLevel(int(req_restock_level)))
+            except ValueError:
+                app.logger.info("Ignore invalid restock_level %s", str(req_restock_level))
+        if req_quantity:
+            try:
+                filter_list.append(cls.quantity == int(req_quantity))
+            except ValueError:
+                app.logger.info("Ignore invalid quantity %s", str(req_quantity))
+
+        
+        return cls.query.filter(*filter_list)
 
     # @classmethod
     # def find_by_inventory_id(cls, inventory_id) -> list:
