@@ -121,7 +121,7 @@ class TestInventoryServer(TestCase):
         self.assertEqual(len(data), successful_create_count)
         # products = data[0]["products"]
         # self.assertEqual(len(products), 2)
-    
+
     def test_list_inventory_with_query(self):
         """It should list all inventories filtered by query parameters"""
         # generate fake request json
@@ -137,7 +137,7 @@ class TestInventoryServer(TestCase):
         for i in range(2*3):
             resp = self.client.post(BASE_URL, json=requests_json[i])
             self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        
+
         # Test single query param
         resp = self.client.get(BASE_URL + "?product_id=" + str(query_product_id))
         data = resp.get_json()
@@ -146,16 +146,16 @@ class TestInventoryServer(TestCase):
         resp = self.client.get(BASE_URL + "?quantity=" + str(query_quantity + 1))
         data = resp.get_json()
         self.assertEqual(len(data), 5)
-    
+
         resp = self.client.get(BASE_URL + "?condition=1")
         data = resp.get_json()
         self.assertEqual(len(data), 2)
 
         # Test multiple query param
-        resp = self.client.get(BASE_URL + "?quantity=" + str(query_quantity) 
-        + "&product_id=" + str(query_product_id)
-        + "&restock_level=" + str(query_restock_level)
-        + "&condition=1")
+        resp = self.client.get(BASE_URL + "?quantity=" + str(query_quantity)
+                               + "&product_id=" + str(query_product_id)
+                               + "&restock_level=" + str(query_restock_level)
+                               + "&condition=1")
         data = resp.get_json()
         print(data)
         self.assertEqual(len(data), 1)
