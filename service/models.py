@@ -7,6 +7,7 @@ import logging
 from enum import IntEnum
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError, DataError, StatementError
+from . import app
 
 logger = logging.getLogger("flask.app")
 
@@ -203,6 +204,36 @@ class Inventory(db.Model, PersistentBase):
         """
         logger.info("Processing condition query for %s ...", condition)
         return cls.query.filter(cls.condition == condition)
+
+    @classmethod
+    def find_by_attributes(cls, req_dict) -> list:
+        """Returns all of the products correspond to given request parameters
+
+        Args:
+            req_dict (MultiDict): dictionary of request parameters
+
+        Returns:
+            list: a collection of products correspond to given request parameters
+        """
+        app.logger.info("Processing query with parameters %s ...", str(req_dict))
+        filter_list = []
+
+        # Add query parameters into filter list, ignore invalid params and illegal values
+        for attr in ['condition', 'restock_level', 'quantity', 'product_id']:
+            value = req_dict.get(attr)
+            if value:
+                try:
+                    if attr == 'condition':
+                        value = Condition(int(value))
+                    elif attr == 'restock_level':
+                        value = StockLevel(int(value))
+                    else:
+                        value = int(value)
+                    filter_list.append(getattr(cls, attr) == value)
+                except ValueError:
+                    app.logger.info('Ignore invalid %s: %s', attr, value)
+
+        return cls.query.filter(*filter_list)
 
     # @classmethod
     # def find_by_inventory_id(cls, inventory_id) -> list:

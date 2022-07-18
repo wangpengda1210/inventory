@@ -94,10 +94,10 @@ class TestInventoryServer(TestCase):
 #     # #  T E S T   H A P P Y   P A T H S
 #     # ######################################################################
 
-#     def test_index(self):
-#         """It should call the home page"""
-#         resp = self.client.get("/")
-#         self.assertEqual(resp.status_code, status.HTTP_200_OK)
+    def test_index(self):
+        """It should call the home page"""
+        resp = self.client.get("/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
     def test_list_inventory_list(self):
         """It should Get a list of Inventories"""
@@ -121,6 +121,54 @@ class TestInventoryServer(TestCase):
         self.assertEqual(len(data), successful_create_count)
         # products = data[0]["products"]
         # self.assertEqual(len(products), 2)
+
+    def test_list_inventory_with_query(self):
+        """It should list all inventories filtered by query parameters"""
+        # generate fake request json
+        requests_json = self._generate_inventories_non_duplicate(2, 3)
+        query_product_id = requests_json[0]['product_id']
+        query_quantity = requests_json[0]['quantity']
+        query_restock_level = requests_json[0]['restock_level']
+
+        for i in range(1, 2*3):
+            requests_json[i]['quantity'] = query_quantity + 1
+
+        # create
+        for i in range(2*3):
+            resp = self.client.post(BASE_URL, json=requests_json[i])
+            self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # Test single query param
+        resp = self.client.get(BASE_URL + "?product_id=" + str(query_product_id))
+        data = resp.get_json()
+        self.assertEqual(len(data), 3)
+
+        resp = self.client.get(BASE_URL + "?quantity=" + str(query_quantity + 1))
+        data = resp.get_json()
+        self.assertEqual(len(data), 5)
+
+        resp = self.client.get(BASE_URL + "?condition=1")
+        data = resp.get_json()
+        self.assertEqual(len(data), 2)
+
+        # Test multiple query param
+        resp = self.client.get(BASE_URL + "?quantity=" + str(query_quantity)
+                               + "&product_id=" + str(query_product_id)
+                               + "&restock_level=" + str(query_restock_level)
+                               + "&condition=1")
+        data = resp.get_json()
+        print(data)
+        self.assertEqual(len(data), 1)
+
+        # Should ignore invalid attributes
+        resp = self.client.get(BASE_URL + "?not_a_attr=2")
+        data = resp.get_json()
+        self.assertEqual(len(data), 6)
+
+        # Should ignore illegal values
+        resp = self.client.get(BASE_URL + "?quantity=a&product_id=b&restock_level=c&condition=0")
+        data = resp.get_json()
+        self.assertEqual(len(data), 6)
 
     def test_read_inventory(self):
         """It should Read a single Inventory"""
@@ -387,22 +435,16 @@ class TestInventoryServer(TestCase):
         resp = self.client.delete(BASE_URL + "/clear")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
-    # def test_methods_not_allowed(self):
-    #     """
-    #     It should not allow
-    #     PUT/DELETE to /inventories
-    #     POST to /inventories/<inventory_id>
-    #     POST/DELETE to /inventories/<inventory_id>/products/<product_id>
-    #     """
-    #     resp = self.client.put(f"{BASE_URL}")
-    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-    #     resp = self.client.delete(f"{BASE_URL}")
-    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    def test_methods_not_allowed(self):
+        """
+        It should not allow
+        PUT/DELETE to /inventories
+        POST to /inventories/<inventory_id>
+        """
+        resp = self.client.put(f"{BASE_URL}")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        resp = self.client.delete(f"{BASE_URL}")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    #     resp = self.client.post(f"{BASE_URL}/0")
-    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    #     resp = self.client.post(f"{BASE_URL}/0/products/0")
-    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-    #     resp = self.client.delete(f"{BASE_URL}/0/products/0")
-    #     self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        resp = self.client.post(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)

@@ -18,21 +18,21 @@ from .utils import status  # HTTP Status Codes
 # Import Flask application
 from . import app
 
-# ######################################################################
-# # GET INDEX
-# ######################################################################
-# @app.route("/")
-# def index():
-#     """Root URL response"""
-#     app.logger.info("Request for Root URL")
-#     return (
-#         jsonify(
-#             name="Inventory REST API Service",
-#             version="1.0",
-#             paths=url_for("list_inventories", _external=True),
-#         ),
-#         status.HTTP_200_OK,
-#     )
+######################################################################
+# GET INDEX
+######################################################################
+@app.route("/")
+def index():
+    """Root URL response"""
+    app.logger.info("Request for Root URL")
+    return (
+        jsonify(
+            name="Inventory REST API Service",
+            version="1.0",
+            paths=url_for("list_inventories", _external=True),
+        ),
+        status.HTTP_200_OK,
+    )
 
 
 ######################################################################
@@ -44,15 +44,13 @@ def list_inventories():
     app.logger.info("Request for Inventory list")
     inventories = []
 
-    # Comment out for future development
-    # name = request.args.get("name")
-    # if name:
-    #     inventories = Inventory.find_by_name(name)
-    # else:
-    #     inventories = Inventory.all()
+    req_dict = request.args
+    app.logger.info(len(req_dict))
 
-    # For now, just list all Inventories
-    inventories = Inventory.all()
+    if len(req_dict) == 0:
+        inventories = Inventory.all()
+    else:
+        inventories = Inventory.find_by_attributes(req_dict)
 
     results = [inventory.serialize() for inventory in inventories]
     return make_response(jsonify(results), status.HTTP_200_OK)
