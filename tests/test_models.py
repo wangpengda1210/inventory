@@ -50,7 +50,6 @@ class TestInventory(unittest.TestCase):
 
     def setUp(self):
         """This runs before each test"""
-        # db.session.query(Product).delete()
         db.session.query(Inventory).delete()  # clean up the last tests
         db.session.commit()
 
@@ -83,7 +82,8 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(inventories, [])
         inventory = InventoryFactory()
         inventory.create()
-        # Assert that it generated an inventory_id and shows up in the database
+        # Assert that it generated an inventory_id and
+        # shows up in the database
         self.assertIsNotNone(inventory.inventory_id)
         inventories = Inventory.all()
         self.assertEqual(len(inventories), 1)
@@ -103,17 +103,22 @@ class TestInventory(unittest.TestCase):
         inventory_id = only_inventory.inventory_id
         self.assertIsNotNone(inventory_id)
         found_inventory = Inventory.find(inventory_id)
-        self.assertEqual(found_inventory.inventory_id, inventory_id)
-        self.assertEqual(found_inventory.product_id, inventory.product_id)
-        self.assertEqual(found_inventory.condition, inventory.condition)
-        self.assertEqual(found_inventory.restock_level, inventory.restock_level)
+        self.assertEqual(
+            found_inventory.inventory_id, inventory_id)
+        self.assertEqual(
+            found_inventory.product_id, inventory.product_id)
+        self.assertEqual(
+            found_inventory.condition, inventory.condition)
+        self.assertEqual(
+            found_inventory.restock_level, inventory.restock_level)
         self.assertEqual(found_inventory.quantity, inventory.quantity)
 
     def test_update_inventory(self):
         """It should Update an inventory"""
         inventory = InventoryFactory(product_id=12345)
         inventory.create()
-        # Assert that it generated an inventory_id and shows up in the database
+        # Assert that it generated an inventory_id and
+        # shows up in the database
         self.assertIsNotNone(inventory.inventory_id)
         self.assertEqual(inventory.product_id, 12345)
         # Fetch it back
@@ -131,7 +136,8 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(inventories, [])
         inventory = InventoryFactory()
         inventory.create()
-        # Assert that it generated an inventory_id and shows up in the database
+        # Assert that it generated an inventory_id and
+        # shows up in the database
         self.assertIsNotNone(inventory.inventory_id)
         inventories = Inventory.all()
         self.assertEqual(len(inventories), 1)
@@ -151,24 +157,16 @@ class TestInventory(unittest.TestCase):
         inventories = Inventory.all()
         self.assertEqual(len(inventories), 5)
 
-    # def test_find_by_name(self):
-    #     """It should Find an inventory by name"""
-    #     inventory = InventoryFactory()
-    #     inventory.create()
-
-    #     # Fetch it back by name
-    #     same_inventory = Inventory.find_by_name(inventory.name)[0]
-    #     self.assertEqual(same_inventory.id, inventory.id)
-    #     self.assertEqual(same_inventory.name, inventory.name)
-
     def test_serialize_an_inventory(self):
         """It should Serialize an inventory"""
         inventory = InventoryFactory()
         serial_inventory = inventory.serialize()
-        self.assertEqual(serial_inventory["inventory_id"], inventory.inventory_id)
+        self.assertEqual(
+            serial_inventory["inventory_id"], inventory.inventory_id)
         self.assertEqual(serial_inventory["product_id"], inventory.product_id)
         self.assertEqual(serial_inventory["condition"], inventory.condition)
-        self.assertEqual(serial_inventory["restock_level"], inventory.restock_level)
+        self.assertEqual(
+            serial_inventory["restock_level"], inventory.restock_level)
         self.assertEqual(serial_inventory["quantity"], inventory.quantity)
 
     def test_deserialize_an_inventory(self):
@@ -176,12 +174,7 @@ class TestInventory(unittest.TestCase):
         inventory = InventoryFactory()
         inventory.create()
         serial_inventory = inventory.serialize()
-        # print(serial_inventory)
-        # for type consideration(deserialize is for json data which is only string, but the
-        # creation via InventoryFactory, data in some fields is Enum.)
-        # serial_inventory["condition"] = serial_inventory["condition"].name
-        # serial_inventory["restock_level"] = serial_inventory["restock_level"].name
-        # if not, the next step deserialize() would err.
+
         new_inventory = Inventory()
         new_inventory.deserialize(serial_inventory)
         self.assertEqual(new_inventory.product_id, inventory.product_id)
@@ -189,7 +182,8 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(new_inventory.restock_level, inventory.restock_level)
         self.assertEqual(new_inventory.quantity, inventory.quantity)
 
-    # assertRaises(ERROR, a, args): check that when a is called with args that it raises ERROR
+    # assertRaises(ERROR, a, args):
+    # check that when a is called with args that it raises ERROR
     def test_deserialize_with_key_error(self):
         """It should not Deserialize an inventory with a KeyError"""
         inventory = Inventory()
@@ -207,7 +201,8 @@ class TestInventory(unittest.TestCase):
             inventory = InventoryFactory()
             inventory.create()
         # eg. check OPEN_BOX
-        # check that OPEN_BOX products only exist in open_box_cll but no in the remaining cll
+        # check that OPEN_BOX products only exist in
+        # open_box_cll but no in the remaining cll
         open_box_cll = Inventory.find_by_condition(Condition.OPEN_BOX).all()
         for open_box in open_box_cll:
             self.assertEqual(open_box.condition.name, "OPEN_BOX")
@@ -221,11 +216,13 @@ class TestInventory(unittest.TestCase):
             inventory = InventoryFactory()
             inventory.create()
         # eg. check LOW
-        # check that LOW stock level products only exist in low_cll but not in the remaining cll
+        # check that LOW stock level products only exist in
+        # low_cll but not in the remaining cll
         low_stock_cll = Inventory.find_by_restock_level(StockLevel.LOW).all()
         for low_stock in low_stock_cll:
             self.assertEqual(low_stock.restock_level.name, "LOW")
-        for inv in [inv for inv in Inventory.all() if inv not in low_stock_cll]:
+        for inv in [inv for inv in Inventory.all()
+                    if inv not in low_stock_cll]:
             self.assertNotEqual(inv.restock_level.name, "LOW")
 
     def test_find_by_condition_and_restock_level(self):
@@ -270,34 +267,3 @@ class TestInventory(unittest.TestCase):
             quantity=fake_inventory.quantity
         )
         self.assertRaises(DuplicateKeyValueError, inventory_2.create)
-
-
-##############################
-
-# def test_add_inventory_product(self):
-#     """It should Create an inventory with an product and add it to the database"""
-#     inventories = inventory.all()
-#     self.assertEqual(inventories, [])
-#     inventory = InventoryFactory()
-#     inventory.create()
-#     logging.debug("Created: %s", inventory.serialize())
-#     product = ProductFactory()
-#     inventory.products.append(product)
-#     inventory.update()
-#     logging.debug("Updated: %s", inventory.serialize())
-#     # Assert that it was assigned an id and shows up in the database
-#     # [both inventory and product table]
-#     self.assertIsNotNone(inventory.id)
-#     inventories = inventory.all()
-#     self.assertEqual(len(inventories), 1)
-
-#     new_inventory = Inventory.find(inventory.id)
-#     self.assertEqual(inventory.products[0].name, product.name)
-
-#     product2 = ProductFactory()
-#     inventory.products.append(product2)
-#     inventory.update()
-
-#     new_inventory = Inventory.find(inventory.id)
-#     self.assertEqual(len(inventory.products), 2)
-#     self.assertEqual(inventory.products[1].name, product2.name)

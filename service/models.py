@@ -25,7 +25,9 @@ class DataValidationError(Exception):
 
 
 class DuplicateKeyValueError(Exception):
-    """Used for inserting records with duplicate keys error in create() function"""
+    """
+    Used for inserting records with
+    duplicate keys error in create() function"""
 
 
 class Condition(IntEnum):
@@ -70,7 +72,8 @@ class PersistentBase:
             db.session.rollback()
             if "duplicate key value violates unique constraint" in error:
                 raise DuplicateKeyValueError(
-                    "duplicate key value violates unique constraint unique_constraint_productid_condition"
+                    "duplicate key value violates unique "
+                    "constraint unique_constraint_product_id_condition"
                 )
         except (DataError, StatementError) as data_error:
             db.session.rollback()
@@ -123,8 +126,8 @@ class Inventory(db.Model, PersistentBase):
     """
     Class that represents a Inventory
 
-    Provide a one-to-one relationship between an inventory and its product_id,condition,
-    restock level and number.
+    Provide a one-to-one relationship between an inventory and
+    its product_id, condition, restock level and number.
     """
     # app = None
     # __tablename__ = "inventory"
@@ -135,14 +138,21 @@ class Inventory(db.Model, PersistentBase):
     )
 
     restock_level = db.Column(
-        db.Enum(StockLevel), nullable=False, server_default=(StockLevel.EMPTY.name)
+        db.Enum(StockLevel), nullable=False,
+        server_default=(StockLevel.EMPTY.name)
     )
 
     quantity = db.Column(db.Integer, nullable=False, default=0)
-    inventory_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
+    inventory_id = db.Column(
+        db.Integer, autoincrement=True,
+        primary_key=True, nullable=False
+    )
 
     __table_args__ = (
-        db.UniqueConstraint('product_id', 'condition', name='unique_constraint_productid_condition'),
+        db.UniqueConstraint(
+            'product_id', 'condition',
+            name='unique_constraint_product_id_condition'
+        ),
     )
 
     def __repr__(self):
@@ -150,7 +160,6 @@ class Inventory(db.Model, PersistentBase):
                 f"condition=[{Condition(self.condition).name}]"
                 f"product_id[{self.product_id}]"
                 f"quantity=[{self.quantity}]"
-                # f"inventory[{self.inventory_id}]"
                 f"restock_level=[{StockLevel(self.restock_level).name}]>")
 
     def serialize(self) -> dict:
@@ -167,14 +176,15 @@ class Inventory(db.Model, PersistentBase):
         """
         Deserializes a Inventory from a dictionary
 
-        Args:
-            data (dict): A dictionary containing the resource data
+        :param data: A dictionary containing the resource data
+        :type data: dict
         """
         try:
             self.product_id = data["product_id"]
             self.condition = data["condition"]  # create enum from string
-            self.restock_level = data["restock_level"]  # create enum from string
-            self.quantity = data["quantity"]
+            self.restock_level = data.get(
+                "restock_level", self.restock_level)  # create enum from string
+            self.quantity = data.get("quantity", self.quantity)
 
         except KeyError as key_error:
             raise DataValidationError(
@@ -209,16 +219,19 @@ class Inventory(db.Model, PersistentBase):
     def find_by_attributes(cls, req_dict) -> list:
         """Returns all of the products correspond to given request parameters
 
-        Args:
-            req_dict (MultiDict): dictionary of request parameters
+        :param req_dict: dictionary of request parameters
+        :type req_dict: MultiDict
 
-        Returns:
-            list: a collection of products correspond to given request parameters
+        :return: a collection of products
+        correspond to given request parameters
+        :rtype: list
         """
-        app.logger.info("Processing query with parameters %s ...", str(req_dict))
+        app.logger.info(
+            "Processing query with parameters %s ...", str(req_dict))
         filter_list = []
 
-        # Add query parameters into filter list, ignore invalid params and illegal values
+        # Add query parameters into filter list,
+        # ignore invalid params and illegal values
         for attr in ['condition', 'restock_level', 'quantity', 'product_id']:
             value = req_dict.get(attr)
             if value:
@@ -253,8 +266,8 @@ class Inventory(db.Model, PersistentBase):
     def find_by_restock_level(cls, restock_level: IntEnum) -> list:
         """Returns all of the Products in a restock_level
 
-        :param restock_level: the restock_level of the Products you want to match
-        :type restock_level: Enum
+        :param restock_level: the target restock_level
+        :type restock_level: IntEnum
 
         :return: a collection of Products in that restock_level
         :rtype: list
@@ -269,10 +282,10 @@ class Inventory(db.Model, PersistentBase):
     ) -> list:
         """Returns all of the Products in a restock_level under a certain condition
 
-        :param restock_level: the restock_level of the Products you want to match
-        :param condition: the condition of the Products you want to match
-        :type restock_level: Enum
-        :type condition: Enum
+        :param restock_level: the target restock_level of the Products
+        :param condition: the target condition of the Products
+        :type restock_level: IntEnum
+        :type condition: IntEnum
 
         :return: a collection of Products in that restock_level
         :rtype: list
@@ -282,26 +295,3 @@ class Inventory(db.Model, PersistentBase):
         return cls.query.filter(
             cls.restock_level == restock_level, cls.condition == condition
         )
-#     ##################################################
-#     # CLASS METHODS
-#     ##################################################
-
-#     @classmethod
-#     def find_by_name(cls, name):
-#         """Returns all Inventories with the given name
-
-#         Args:
-#             name (string): the name of the Inventories you want to match
-#         """
-#         logger.info("Processing name query for %s ...", name)
-#         return cls.query.filter(cls.name == name)
-
-#     # @classmethod
-#     # def if_exists_by_name(cls, name):
-#     #     """Returns whether an inventory with the given name already created
-
-#     #     Args:
-#     #         name (string): the name of the Inventories you want to match
-#     #     """
-#     #     logger.info("Processing existence query for %s ...", name)
-#     #     return db.session.query(cls.query.filter(cls.name == name)).scalar()
