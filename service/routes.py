@@ -84,7 +84,8 @@ def get_inventory(inventory_id):
 def create_inventories():  # noqa: C901
     """
     Creates an Inventory
-    This endpoint will create an inventory based the data in the body that is posted
+    This endpoint will create an inventory
+    based on the data in the body that is posted
     """
     app.logger.info("Request to create an Inventory")
     check_content_type("application/json")
@@ -107,33 +108,26 @@ def create_inventories():  # noqa: C901
 # # ######################################################################
 # # # UPDATE AN EXISTING INVENTORY  (#story 10)
 # # ######################################################################
-# @app.route("/inventories/<int:inventory_id>", methods=["PUT"])
-# def update_inventory(inventory_id):
-#     """
-#     Update an Inventory
+@app.route("/inventories/<int:inventory_id>", methods=["PUT"])
+def update_inventory(inventory_id):
+    """
+    Update an Inventory
 
-#     This endpoint will update an Inventory based the body that is posted
-#     """
-#     app.logger.info("Request to update inventory with id: %s", inventory_id)
-#     check_content_type("application/json")
+    This endpoint will update an Inventory based the body that is posted
+    """
+    app.logger.info("Request to update inventory with id: %s", inventory_id)
+    check_content_type("application/json")
 
-#     name = request.get_json().get("name")
-#     # If there is no name in json, request can't be process
-#     if not name:
-#         abort(
-#             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Inventory name was not provided."
-#         )
-
-#     inventory = Inventory.find(inventory_id)
-#     if not inventory:
-#         abort(
-#             status.HTTP_404_NOT_FOUND,
-#             f"Inventory with id '{inventory_id}' was not found.",
-#         )
-#     inventory.deserialize(request.get_json())
-#     inventory.id = inventory_id
-#     inventory.update()
-#     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' was not found.",
+        )
+    inventory.deserialize(request.get_json())
+    inventory.id = inventory_id
+    inventory.update()
+    return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
@@ -151,6 +145,7 @@ def delete_inventory(inventory_id):
         inventory.delete()
     return make_response("", status.HTTP_204_NO_CONTENT)
 
+
 ######################################################################
 # DELETE ALL INVENTORIES (Action)
 ######################################################################
@@ -166,63 +161,10 @@ def delete_all_inventories():
         inventory.delete()
     return make_response("", status.HTTP_204_NO_CONTENT)
 
-# # #####################################################################
-# # # RETRIEVE A PRODUCT FROM AN INVENTORY (#story 4)
-# # #####################################################################
-# @app.route("/inventories/<int:inventory_id>/products/<int:product_id>", methods=["GET"])
-# def get_products(inventory_id, product_id):
-#     """
-#     Retrieve Products of an Inventory
-
-#     This endpoint returns a group of Products with a same condition
-#     """
-#     app.logger.info(
-#         "Request to retrieve Products %s for Inventory id: %s",
-#         (product_id, inventory_id),
-#     )
-#     product = Product.find(product_id)
-#     if not product:
-#         abort(
-#             status.HTTP_404_NOT_FOUND,
-#             f"Products with id '{product_id}' could not be found.",
-#         )
-
-#     return make_response(jsonify(product.serialize()), status.HTTP_200_OK)
-
-
-# # #####################################################################
-# # # UPDATE A PRODUCT FROM AN INVENTORY (#story 10)
-# # #####################################################################
-# @app.route("/inventories/<int:inventory_id>/products/<int:product_id>", methods=["PUT"])
-# def update_products(inventory_id, product_id):
-#     """
-#     Update Products of an Inventory
-
-#     This endpoint update a group of Products with a same condition
-#     """
-#     app.logger.info(
-#         "Request to update Products %s for Inventory id: %s", (product_id, inventory_id)
-#     )
-#     check_content_type("application/json")
-#     update_product = Product.find(product_id)
-#     if not update_product:
-#         abort(
-#             status.HTTP_404_NOT_FOUND,
-#             f"Product with id '{product_id}' could not be found.",
-#         )
-#     request_product = request.get_json()
-#     update_product.deserialize(request_product)
-#     update_product.id = product_id
-#     update_product.update()
-#     app.logger.info("Updated")
-#     return make_response(jsonify(update_product.serialize()), status.HTTP_200_OK)
-
 
 # ######################################################################
 # #  U T I L I T Y   F U N C T I O N S
 # ######################################################################
-
-
 def check_content_type(media_type):
     """Checks that the media type is correct"""
     content_type = request.headers.get("Content-Type")
