@@ -42,8 +42,8 @@ tests/              - test cases package
 ## Database model and its APIs
 
 ### Database model
+![image](https://user-images.githubusercontent.com/92689269/179883406-685a09e5-6706-4fb4-acf5-acfe97db0c26.png)
 
-![Database model](/images/database_model.jpg)
 
 ```text
                           Persistent Base, SQLAlchemy
