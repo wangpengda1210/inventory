@@ -47,8 +47,8 @@ tests/              - test cases package
 
 ```text
                           Persistent Base, SQLAlchemy
-                                  /           \
-  Product(db.model, Persistent Base)           Inventory(db.Model, Persistent Base) 
+                                        |
+                      Inventory(db.Model, Persistent Base) 
 ```
 
 ### APIs
