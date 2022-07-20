@@ -123,12 +123,28 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(inventory.product_id, 12345)
         # Fetch it back
         inventory = Inventory.find(inventory.inventory_id)
-        inventory.product_id = "54321"
-        inventory.update()
+        inventory_data = inventory.serialize()
+        quantity = inventory_data["quantity"]
+        inventory_data["quantity"] += 1
+        inventory.update(inventory_data)
 
         # Fetch it back again
         inventory = Inventory.find(inventory.inventory_id)
-        self.assertEqual(inventory.product_id, 54321)
+        self.assertEqual(inventory.quantity, quantity+1)
+
+        bad_inventory_data = inventory_data
+        bad_inventory_data["product_id"] += 1
+        self.assertRaises(
+            DataValidationError,
+            inventory.update, bad_inventory_data
+        )
+
+        bad_inventory_data2 = inventory_data
+        bad_inventory_data2["condition"] += 1
+        self.assertRaises(
+            DataValidationError,
+            inventory.update, bad_inventory_data2
+        )
 
     def test_delete_an_inventory(self):
         """It should Delete an inventory from the database"""

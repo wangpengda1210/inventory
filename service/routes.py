@@ -124,9 +124,10 @@ def update_inventory(inventory_id):
             status.HTTP_404_NOT_FOUND,
             f"Inventory with id '{inventory_id}' was not found.",
         )
-    inventory.deserialize(request.get_json())
-    inventory.id = inventory_id
-    inventory.update()
+    # inventory.deserialize(request.get_json())
+    # inventory.id = inventory_id
+    # inventory.update()
+    inventory.update(request.get_json())
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
@@ -160,6 +161,46 @@ def delete_all_inventories():
     for inventory in inventories:
         inventory.delete()
     return make_response("", status.HTTP_204_NO_CONTENT)
+
+
+######################################################################
+# UPDATE QUANTITY UNDER PRODUCT_ID & CONDITION (Action)
+######################################################################
+@app.route("/inventories/changeQuantity", methods=["PUT"])
+def update_inventory_by_product_id_condition():
+    """
+    Update an Inventory by product_id & condition
+
+    This endpoint will update an Inventory based on the body that is posted
+    """
+    check_content_type("application/json")
+
+    request_dict = request.get_json()
+    req_product_id = request_dict["product_id"]
+    req_condition = request_dict["condition"]
+
+    app.logger.info(
+        "Request to update inventory with "
+        "product_id: %s & condition: %s",
+        req_product_id, req_condition)
+
+    inventories = Inventory.find_by_attributes(
+        {"product_id": req_product_id,
+         "condition": req_condition}
+    ).all()
+    if not inventories:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with product_id '{req_product_id}' & "
+            f"condition '{req_condition}' was not found.",
+        )
+    assert(len(inventories) == 1)
+    app.logger.info("%s", type(inventories))
+    inventory = inventories[0]
+    # inventory.deserialize(request_dict)
+    # inventory.update()
+    inventory.update(request_dict)
+    return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
 # ######################################################################

@@ -197,6 +197,24 @@ class Inventory(db.Model, PersistentBase):
             ) from type_error
         return self
 
+    def update(self, data):
+        """Update an Inventory from a dictionary
+           while checking for bad cases when
+           product_id or condition are being
+           updated.
+
+        :param data: A dictionary containing the resource data
+        :type data: dict
+        """
+        if self.product_id != data["product_id"] or \
+           self.condition != data["condition"]:
+            raise DataValidationError(
+                "Invalid Product: product_id or "
+                "condition should not be updated"
+            )
+        self.deserialize(data)
+        return super().update()
+
     ##################################################
     # CLASS METHODS
     ##################################################

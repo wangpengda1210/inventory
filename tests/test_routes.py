@@ -161,7 +161,7 @@ class TestInventoryServer(TestCase):
                                + "&restock_level=" + str(query_restock_level)
                                + "&condition=1")
         data = resp.get_json()
-        print(data)
+        # print(data)
         self.assertEqual(len(data), 1)
 
         # Should ignore invalid attributes
@@ -276,6 +276,30 @@ class TestInventoryServer(TestCase):
         data = resp.get_json()
         self.assertEqual(data, [])
 
+    def test_update_inventory_by_product_id_condition(self):
+        """It should Update an Inventory by its product_id & condition"""
+        # create & get the id of an Inventory
+        inventory = self._create_inventories(1)[0]
+        logging.debug("Created %s", repr(inventory))
+
+        # update
+        new_inventory = inventory.serialize()
+        new_inventory["quantity"] = 42
+        new_inventory.pop("restock_level")  # check for partial update
+        logging.debug("Updated %s", new_inventory)
+        resp = self.client.put(
+            BASE_URL + "/changeQuantity",
+            json=new_inventory
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        # check for correctness on partial update
+        updated = resp.get_json()
+        self.assertEqual(
+            updated["quantity"], new_inventory["quantity"])
+        self.assertEqual(
+            updated["restock_level"], inventory.restock_level)
+
     ######################################################################
     #  T E S T   S A D   P A T H S
     ######################################################################
@@ -352,6 +376,17 @@ class TestInventoryServer(TestCase):
 
         resp = self.client.delete(BASE_URL + "/clear")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_update_inventory_by_product_id_condition_not_found(self):
+        """It should not Update the Inventory when
+        the product_id & condition are not found"""
+        request_json = self._create_inventories(1)[0].serialize()
+        request_json["product_id"] += 1
+        resp = self.client.put(
+            BASE_URL + "/changeQuantity",
+            json=request_json
+        )
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_methods_not_allowed(self):
         """
