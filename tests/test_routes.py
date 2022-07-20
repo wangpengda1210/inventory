@@ -161,7 +161,7 @@ class TestInventoryServer(TestCase):
                                + "&restock_level=" + str(query_restock_level)
                                + "&condition=1")
         data = resp.get_json()
-        print(data)
+        # print(data)
         self.assertEqual(len(data), 1)
 
         # Should ignore invalid attributes

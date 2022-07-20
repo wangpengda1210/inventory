@@ -124,9 +124,10 @@ def update_inventory(inventory_id):
             status.HTTP_404_NOT_FOUND,
             f"Inventory with id '{inventory_id}' was not found.",
         )
-    inventory.deserialize(request.get_json())
-    inventory.id = inventory_id
-    inventory.update()
+    # inventory.deserialize(request.get_json())
+    # inventory.id = inventory_id
+    # inventory.update()
+    inventory.update(request.get_json())
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
@@ -196,8 +197,9 @@ def update_inventory_by_product_id_condition():
     assert(len(inventories) == 1)
     app.logger.info("%s", type(inventories))
     inventory = inventories[0]
-    inventory.deserialize(request_dict)
-    inventory.update()
+    # inventory.deserialize(request_dict)
+    # inventory.update()
+    inventory.update(request_dict)
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 
