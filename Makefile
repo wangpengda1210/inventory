@@ -1,6 +1,6 @@
 # These can be overidden with env vars.
 REGISTRY ?= us.icr.io
-NAMESPACE ?= devops_inventory
+NAMESPACE ?= dev_inventory
 IMAGE_NAME ?= inventory-cloud-cf
 IMAGE_TAG ?= 1.0
 IMAGE ?= $(REGISTRY)/$(NAMESPACE)/$(IMAGE_NAME):$(IMAGE_TAG)
@@ -60,6 +60,10 @@ login: ## Login to IBM Cloud using yur api key
 	ibmcloud cr login
 	ibmcloud ks cluster config --cluster $(CLUSTER)
 	kubectl cluster-info
+
+
+
+
 
 ############################################################
 # COMMANDS FOR BUILDING THE IMAGE

@@ -202,6 +202,14 @@ def update_inventory_by_product_id_condition():
     inventory.update(request_dict)
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
+############################################################
+# Health Endpoint
+############################################################
+@app.route("/health")
+def health():
+    """Health Status"""
+    return jsonify(dict(status="OK")), status.HTTP_200_OK
+
 
 # ######################################################################
 # #  U T I L I T Y   F U N C T I O N S
@@ -216,3 +224,5 @@ def check_content_type(media_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {media_type}",
     )
+
+

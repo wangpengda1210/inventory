@@ -19,7 +19,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: inventory-cloud-cf
-        image: us.icr.io/devops_inventory/inventory-cloud-cf:1.0
+        image: us.icr.io/dev_inventory/inventory-cloud-cf:1.0
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
