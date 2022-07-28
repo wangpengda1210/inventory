@@ -8,7 +8,7 @@
 import os
 import logging
 from unittest import TestCase
-from tests.factory import InventoryFactory, Condition, RestockLevel
+from tests.factory import InventoryFactory, Condition
 from service import app
 from service.models import db, Inventory, init_db
 from service.utils import status  # HTTP Status Codes
