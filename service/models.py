@@ -3,6 +3,7 @@ Models for Inventory
 
 All of the models are stored in this module
 """
+from itertools import product
 import logging
 from enum import IntEnum
 from flask_sqlalchemy import SQLAlchemy
@@ -39,8 +40,8 @@ class Condition(IntEnum):
     UNKNOWN = 4
 
 
-class StockLevel(IntEnum):
-    """Enumeration of StockLevel of a valid Inventory"""
+class RestockLevel(IntEnum):
+    """Enumeration of RestockLevel of a valid Inventory"""
 
     EMPTY = 0
     LOW = 1
@@ -138,8 +139,8 @@ class Inventory(db.Model, PersistentBase):
     )
 
     restock_level = db.Column(
-        db.Enum(StockLevel), nullable=False,
-        server_default=(StockLevel.EMPTY.name)
+        db.Enum(RestockLevel), nullable=False,
+        server_default=(RestockLevel.EMPTY.name)
     )
 
     quantity = db.Column(db.Integer, nullable=False, default=0)
@@ -157,10 +158,10 @@ class Inventory(db.Model, PersistentBase):
 
     def __repr__(self):
         return (f"<Inventory_id = [{self.inventory_id}]"
-                f"condition=[{Condition(self.condition).name}]"
+                f"condition=[{self.condition}]"
                 f"product_id[{self.product_id}]"
                 f"quantity=[{self.quantity}]"
-                f"restock_level=[{StockLevel(self.restock_level).name}]>")
+                f"restock_level=[{self.restock_level}]>")
 
     def serialize(self) -> dict:
         """Serializes a Inventory into a dictionary"""
@@ -206,8 +207,9 @@ class Inventory(db.Model, PersistentBase):
         :param data: A dictionary containing the resource data
         :type data: dict
         """
+        condition = data["condition"] if isinstance(data["condition"], int) else Condition[data["condition"]].value
         if self.product_id != data["product_id"] or \
-           self.condition != data["condition"]:
+           self.condition != condition:
             raise DataValidationError(
                 "Invalid Product: product_id or "
                 "condition should not be updated"
@@ -257,7 +259,7 @@ class Inventory(db.Model, PersistentBase):
                     if attr == 'condition':
                         value = Condition(int(value))
                     elif attr == 'restock_level':
-                        value = StockLevel(int(value))
+                        value = RestockLevel(int(value))
                     else:
                         value = int(value)
                     filter_list.append(getattr(cls, attr) == value)

@@ -13,7 +13,7 @@ from service.models import (
     DuplicateKeyValueError,
     db,
     Condition,
-    StockLevel,
+    RestockLevel,
 
 )
 # from service.models import Product
@@ -140,7 +140,7 @@ class TestInventory(unittest.TestCase):
         )
 
         bad_inventory_data2 = inventory_data
-        bad_inventory_data2["condition"] += 1
+        bad_inventory_data2["condition"] = Condition[bad_inventory_data2["condition"]].value + 1
         self.assertRaises(
             DataValidationError,
             inventory.update, bad_inventory_data2
@@ -180,9 +180,9 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(
             serial_inventory["inventory_id"], inventory.inventory_id)
         self.assertEqual(serial_inventory["product_id"], inventory.product_id)
-        self.assertEqual(serial_inventory["condition"], inventory.condition)
+        self.assertEqual(serial_inventory["condition"], inventory.condition.name)
         self.assertEqual(
-            serial_inventory["restock_level"], inventory.restock_level)
+            serial_inventory["restock_level"], inventory.restock_level.name)
         self.assertEqual(serial_inventory["quantity"], inventory.quantity)
 
     def test_deserialize_an_inventory(self):
@@ -194,8 +194,8 @@ class TestInventory(unittest.TestCase):
         new_inventory = Inventory()
         new_inventory.deserialize(serial_inventory)
         self.assertEqual(new_inventory.product_id, inventory.product_id)
-        self.assertEqual(new_inventory.condition, inventory.condition)
-        self.assertEqual(new_inventory.restock_level, inventory.restock_level)
+        self.assertEqual(new_inventory.condition, inventory.condition.name)
+        self.assertEqual(new_inventory.restock_level, inventory.restock_level.name)
         self.assertEqual(new_inventory.quantity, inventory.quantity)
 
     # assertRaises(ERROR, a, args):
@@ -234,7 +234,7 @@ class TestInventory(unittest.TestCase):
         # eg. check LOW
         # check that LOW stock level products only exist in
         # low_cll but not in the remaining cll
-        low_stock_cll = Inventory.find_by_restock_level(StockLevel.LOW).all()
+        low_stock_cll = Inventory.find_by_restock_level(RestockLevel.LOW).all()
         for low_stock in low_stock_cll:
             self.assertEqual(low_stock.restock_level.name, "LOW")
         for inv in [inv for inv in Inventory.all()
@@ -251,7 +251,7 @@ class TestInventory(unittest.TestCase):
         # check that filtered products only exist in open_box_and_low_cll
         # but not in the remaining cll
         open_box_and_low_cll = Inventory.find_by_condition_and_restock_level(
-            Condition.OPEN_BOX, StockLevel.LOW
+            Condition.OPEN_BOX, RestockLevel.LOW
         ).all()
         for open_box_and_low in open_box_and_low_cll:
             self.assertEqual(open_box_and_low.condition.name, "OPEN_BOX")

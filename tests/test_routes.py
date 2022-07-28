@@ -8,7 +8,7 @@
 import os
 import logging
 from unittest import TestCase
-from tests.factory import InventoryFactory, Condition
+from tests.factory import InventoryFactory, Condition, RestockLevel
 from service import app
 from service.models import db, Inventory, init_db
 from service.utils import status  # HTTP Status Codes
@@ -190,8 +190,8 @@ class TestInventoryServer(TestCase):
         # print(data)
         self.assertEqual(data["quantity"], inventory.quantity)
         self.assertEqual(data["product_id"], inventory.product_id)
-        self.assertEqual(data["condition"], inventory.condition)
-        self.assertEqual(data["restock_level"], inventory.restock_level)
+        self.assertEqual(data["condition"], inventory.condition.name)
+        self.assertEqual(data["restock_level"], inventory.restock_level.name)
 
     def test_create_inventory(self):
         """It should Create an Inventory"""
@@ -236,7 +236,7 @@ class TestInventoryServer(TestCase):
         self.assertEqual(
             updated["quantity"], new_inventory["quantity"])
         self.assertEqual(
-            updated["restock_level"], inventory.restock_level)
+            updated["restock_level"], inventory.restock_level.name)
 
     def test_delete_inventory(self):
         """It should Delete an Inventory"""
@@ -298,7 +298,7 @@ class TestInventoryServer(TestCase):
         self.assertEqual(
             updated["quantity"], new_inventory["quantity"])
         self.assertEqual(
-            updated["restock_level"], inventory.restock_level)
+            updated["restock_level"], inventory.restock_level.name)
 
     ######################################################################
     #  T E S T   S A D   P A T H S
