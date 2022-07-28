@@ -209,7 +209,7 @@ def update_inventory_by_product_id_condition():
 @app.route("/health")
 def health():
     """Health Status"""
-    return jsonify(dict(status="OK")), status.HTTP_200_OK
+    return make_response(jsonify(status=200, message="OK"), status.HTTP_200_OK)
 
 
 # ######################################################################

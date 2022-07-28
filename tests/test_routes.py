@@ -101,6 +101,13 @@ class TestInventoryServer(TestCase):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
+    def test_health(self):
+        """It should be healthy"""
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data['message'], 'OK')
+
     def test_list_inventory_list(self):
         """It should Get a list of Inventories"""
         # when no data, return []
