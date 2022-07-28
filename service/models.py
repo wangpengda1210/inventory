@@ -166,9 +166,9 @@ class Inventory(db.Model, PersistentBase):
         """Serializes a Inventory into a dictionary"""
         return {
             "inventory_id": self.inventory_id,
-            "condition": self.condition,
+            "condition": self.condition.name,
             "product_id": self.product_id,
-            "restock_level": self.restock_level,
+            "restock_level": self.restock_level.name,
             "quantity": self.quantity
             }
 

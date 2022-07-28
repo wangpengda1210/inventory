@@ -25,15 +25,15 @@ from . import app
 def index():
     """Root URL response"""
     app.logger.info("Request for Root URL")
-    return (
-        jsonify(
-            name="Inventory REST API Service",
-            version="1.0",
-            paths=url_for("list_inventories", _external=True),
-        ),
-        status.HTTP_200_OK,
-    )
-
+    # return (
+    #     jsonify(
+    #         name="Inventory REST API Service",
+    #         version="1.0",
+    #         paths=url_for("list_inventories", _external=True),
+    #     ),
+    #     status.HTTP_200_OK,
+    # )
+    return app.send_static_file("index.html")
 
 ######################################################################
 # LIST ALL INVENTORIES

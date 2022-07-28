@@ -1,2 +1,4 @@
 # Copy this file to .env to expose these environment variables
 FLASK_APP=service:app
+WAIT_SECONDS=60
+BASE_URL='http://localhost:8000'
