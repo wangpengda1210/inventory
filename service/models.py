@@ -3,7 +3,6 @@ Models for Inventory
 
 All of the models are stored in this module
 """
-from itertools import product
 import logging
 from enum import IntEnum
 from flask_sqlalchemy import SQLAlchemy
