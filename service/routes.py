@@ -94,11 +94,13 @@ def create_inventories():  # noqa: C901
     inventory.deserialize(request.get_json())
     inventory.create()
 
+    app.logger.info("Inventory [%s] created.", inventory.inventory_id)
+
     message = inventory.serialize()
     location_url = url_for(
-        "create_inventories", inventory_id=inventory.id, _external=True
+        "create_inventories", inventory_id=inventory.inventory_id, _external=True
     )
-    app.logger.info("Inventory [%s] created.", inventory.id)
+
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
