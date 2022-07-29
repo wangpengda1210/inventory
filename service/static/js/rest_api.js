@@ -6,7 +6,7 @@ $(function () {
 
     // Updates the form with data from the response
     function update_form_data(res) {
-        $("#inventory_id").val(res.inventory_id);
+        $("#inventory_inventory_id").val(res.inventory_id);
         $("#inventory_product_id").val(res.product_id);
         $("#inventory_condition").val(res.condition);
         $("#inventory_quantity").val(res.quantity);
@@ -15,7 +15,7 @@ $(function () {
 
     /// Clears all form fields
     function clear_form_data() {
-        $("#inventory_id").val("");
+        $("#inventory_inventory_id").val("");
         $("#inventory_product_id").val("");
         $("#inventory_condition").val("");
         $("#inventory_quantity").val("");
@@ -72,7 +72,7 @@ $(function () {
 
     $("#update-btn").click(function () {
 
-        let inventory_id = $("#inventory_id").val();
+        let inventory_id = $("#inventory_inventory_id").val();
         let product_id = $("#inventory_product_id").val();
         let condition = $("#inventory_condition").val();
         let quantity = $("#inventory_quantity").val();
@@ -111,7 +111,7 @@ $(function () {
 
     $("#retrieve-btn").click(function () {
 
-        let inventory_id = $("#inventory_id").val();
+        let inventory_id = $("#inventory_inventory_id").val();
 
         $("#flash_message").empty();
 
@@ -141,7 +141,7 @@ $(function () {
 
     $("#delete-btn").click(function () {
 
-        let inventory_id = $("#inventory_id").val();
+        let inventory_id = $("#inventory_inventory_id").val();
 
         $("#flash_message").empty();
 
@@ -167,7 +167,7 @@ $(function () {
     // ****************************************
 
     $("#clear-btn").click(function () {
-        $("#inventory_id").val("");
+        $("#inventory_inventory_id").val("");
         $("#flash_message").empty();
         clear_form_data()
     });

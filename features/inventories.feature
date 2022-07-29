@@ -24,3 +24,25 @@ Scenario: List all inventories
     And I should see "1" "OPEN_BOX" "2" and "MODERATE" in the "2nd" row of the results
     And I should see "2" "NEW" "3" and "MODERATE" in the "3rd" row of the results
     And I should see "3" "USED" "4" and "PLENTY" in the "4th" row of the results
+
+Scenario: Update an Inventory
+    When I visit the "Home Page"
+    And I set the "Product Id" to "1"
+    And I select "NEW" in the "Condition" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "1" in the "Product Id" field
+    And I should see "NEW" in the "Condition" dropdown
+    When I select "MODERATE" in the "Restock Level" dropdown
+    And I press the "Update" button
+    Then I should see the message "Success"
+    When I copy the "Inventory ID" field
+    And I press the "Clear" button
+    And I paste the "Inventory ID" field
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "MODERATE" in the "Restock Level" dropdown
+    When I press the "Clear" button
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "1" "NEW" "1" and "MODERATE" in the "4st" row of the results
