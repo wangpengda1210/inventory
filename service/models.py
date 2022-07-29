@@ -206,7 +206,6 @@ class Inventory(db.Model, PersistentBase):
         :param data: A dictionary containing the resource data
         :type data: dict
         """
-        # self.condition in type enum 
         condition = str(data["condition"])
         condition = Condition(int(condition)) if condition.isnumeric() else Condition[condition]
         if self.product_id != int(data["product_id"]) or \
