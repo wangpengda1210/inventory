@@ -16,10 +16,11 @@ Scenario: The server is running
     Then I should see "Inventory RESTful Service" in the title
     And I should not see "404 Not Found"
 
-# Scenario: List all inventories
-#     When I visit the "Home Page"
-#     And I press the "Search" button
-#     Then I should see the message "Success"
-    # And I should see "fido" in the results
-    # And I should see "kitty" in the results
-    # And I should not see "leo" in the results
+Scenario: List all inventories 
+    When I visit the "Home Page"
+    And I press the "Search" button
+    Then I should see the message "Success"                                                                                                                                                                                                                                                                                                      
+    And I should see "1" "NEW" "1" and "LOW" in the "1st" row of the results
+    And I should see "1" "OPEN_BOX" "2" and "MODERATE" in the "2nd" row of the results
+    And I should see "2" "NEW" "3" and "MODERATE" in the "3rd" row of the results
+    And I should see "3" "USED" "4" and "PLENTY" in the "4th" row of the results
