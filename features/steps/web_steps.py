@@ -82,18 +82,27 @@ def step_impl(context, text_string):
 #     element.clear()
 #     element.send_keys(context.clipboard)
 
-# ##################################################################
-# # This code works because of the following naming convention:
-# # The buttons have an id in the html hat is the button text
-# # in lowercase followed by '-btn' so the Clean button has an id of
-# # id='clear-btn'. That allows us to lowercase the name and add '-btn'
-# # to get the element id of any button
-# ##################################################################
+##################################################################
+# This code works because of the following naming convention:
+# The buttons have an id in the html hat is the button text
+# in lowercase followed by '-btn' so the Clean button has an id of
+# id='clear-btn'. That allows us to lowercase the name and add '-btn'
+# to get the element id of any button
+##################################################################
 
-# @when('I press the "{button}" button')
-# def step_impl(context, button):
-#     button_id = button.lower() + '-btn'
-#     context.driver.find_element_by_id(button_id).click()
+@when('I press the "{button}" button')
+def step_impl(context, button):
+    button_id = button.lower() + '-btn'
+    context.driver.find_element_by_id(button_id).click()
+
+@then('I should see "{product_id}" "{condition}" "{quantity}" and "{restock_level}" in the "{row_number}" row of the results')
+def step_impl(context, product_id, condition, quantity, restock_level, row_number):
+    expected_result = [product_id, condition, quantity, restock_level]
+    row = row_number[:1]
+    element = context.driver.find_elements_by_xpath(f"//table[@class='table table-striped']/tbody/tr[{row}]")  #get the row result [variable element is a Webelement object]
+    result = element[0].text.split()[1:] # convert element to string and drop the ID field  [425 1 NEW 1 LOW]==> [1 NEW 1 LOW]
+    expect(result) == expected_result # compare
+
 
 # @then('I should see "{name}" in the results')
 # def step_impl(context, name):
@@ -111,15 +120,15 @@ def step_impl(context, text_string):
 #     error_msg = "I should not see '%s' in '%s'" % (name, element.text)
 #     ensure(name in element.text, False, error_msg)
 
-# @then('I should see the message "{message}"')
-# def step_impl(context, message):
-#     found = WebDriverWait(context.driver, context.WAIT_SECONDS).until(
-#         expected_conditions.text_to_be_present_in_element(
-#             (By.ID, 'flash_message'),
-#             message
-#         )
-#     )
-#     expect(found).to_be(True)
+@then('I should see the message "{message}"')
+def step_impl(context, message):
+    found = WebDriverWait(context.driver, context.WAIT_SECONDS).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'flash_message'),
+            message
+        )
+    )
+    expect(found).to_be(True)
 
 # ##################################################################
 # # This code works because of the following naming convention:
