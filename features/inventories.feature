@@ -33,6 +33,7 @@ Scenario: Update an Inventory
     Then I should see the message "Success"
     And I should see "1" in the "Product Id" field
     And I should see "NEW" in the "Condition" dropdown
+    And I should see "LOW" in the "Restock Level" dropdown
     When I select "MODERATE" in the "Restock Level" dropdown
     And I press the "Update" button
     Then I should see the message "Success"
@@ -50,6 +51,15 @@ Scenario: Update an Inventory
     And I select "NEW" in the "Condition" dropdown
     And I press the "Search" button
     Then I should see the message "Success"
+    And I should see "1" in the "Product Id" field
+    And I should see "NEW" in the "Condition" dropdown
     When I select "USED" in the "Condition" dropdown
     And I press the "Update" button
     Then I should see the message "Invalid Product: product_id or condition should not be updated"
+    When I paste the "Inventory ID" field
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "1" in the "Product Id" field
+    And I should see "NEW" in the "Condition" dropdown
+
+
