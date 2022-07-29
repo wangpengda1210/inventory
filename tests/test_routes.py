@@ -101,6 +101,13 @@ class TestInventoryServer(TestCase):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
+    def test_health(self):
+        """It should be healthy"""
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data['message'], 'OK')
+
     def test_list_inventory_list(self):
         """It should Get a list of Inventories"""
         # when no data, return []
@@ -190,8 +197,8 @@ class TestInventoryServer(TestCase):
         # print(data)
         self.assertEqual(data["quantity"], inventory.quantity)
         self.assertEqual(data["product_id"], inventory.product_id)
-        self.assertEqual(data["condition"], inventory.condition)
-        self.assertEqual(data["restock_level"], inventory.restock_level)
+        self.assertEqual(data["condition"], inventory.condition.name)
+        self.assertEqual(data["restock_level"], inventory.restock_level.name)
 
     def test_create_inventory(self):
         """It should Create an Inventory"""
@@ -236,7 +243,7 @@ class TestInventoryServer(TestCase):
         self.assertEqual(
             updated["quantity"], new_inventory["quantity"])
         self.assertEqual(
-            updated["restock_level"], inventory.restock_level)
+            updated["restock_level"], inventory.restock_level.name)
 
     def test_delete_inventory(self):
         """It should Delete an Inventory"""
@@ -298,7 +305,7 @@ class TestInventoryServer(TestCase):
         self.assertEqual(
             updated["quantity"], new_inventory["quantity"])
         self.assertEqual(
-            updated["restock_level"], inventory.restock_level)
+            updated["restock_level"], inventory.restock_level.name)
 
     ######################################################################
     #  T E S T   S A D   P A T H S

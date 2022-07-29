@@ -25,15 +25,15 @@ from . import app
 def index():
     """Root URL response"""
     app.logger.info("Request for Root URL")
-    return (
-        jsonify(
-            name="Inventory REST API Service",
-            version="1.0",
-            paths=url_for("list_inventories", _external=True),
-        ),
-        status.HTTP_200_OK,
-    )
-
+    # return (
+    #     jsonify(
+    #         name="Inventory REST API Service",
+    #         version="1.0",
+    #         paths=url_for("list_inventories", _external=True),
+    #     ),
+    #     status.HTTP_200_OK,
+    # )
+    return app.send_static_file("index.html")
 
 ######################################################################
 # LIST ALL INVENTORIES
@@ -94,12 +94,13 @@ def create_inventories():  # noqa: C901
     inventory.deserialize(request.get_json())
     inventory.create()
 
-    app.logger.info("Inventory [%s] created.", inventory.id)
+    app.logger.info("Inventory [%s] created.", inventory.inventory_id)
 
     message = inventory.serialize()
     location_url = url_for(
-        "create_inventories", inventory_id=inventory.id, _external=True
+        "create_inventories", inventory_id=inventory.inventory_id, _external=True
     )
+
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
@@ -208,7 +209,7 @@ def update_inventory_by_product_id_condition():
 @app.route("/health")
 def health():
     """Health Status"""
-    return jsonify(dict(status="OK")), status.HTTP_200_OK
+    return make_response(jsonify(status=200, message="OK"), status.HTTP_200_OK)
 
 
 # ######################################################################
