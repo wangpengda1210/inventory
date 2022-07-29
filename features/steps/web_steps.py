@@ -51,6 +51,7 @@ def step_impl(context, text, element_name):
 
 @then('I should see "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
+    context.driver.save_screenshot('home_page.png')
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = Select(context.driver.find_element_by_id(element_id))
     expect(element.first_selected_option.text).to_equal(text)
@@ -122,7 +123,6 @@ def step_impl(context, product_id, condition, quantity, restock_level, row_numbe
 
 @then('I should see the message "{message}"')
 def step_impl(context, message):
-    context.driver.save_screenshot('home_page.png')
     found = WebDriverWait(context.driver, context.WAIT_SECONDS).until(
         expected_conditions.text_to_be_present_in_element(
             (By.ID, 'flash_message'),

@@ -46,3 +46,10 @@ Scenario: Update an Inventory
     And I press the "Search" button
     Then I should see the message "Success"
     And I should see "1" "NEW" "1" and "MODERATE" in the "4st" row of the results
+    When I set the "Product Id" to "1"
+    And I select "NEW" in the "Condition" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    When I select "USED" in the "Condition" dropdown
+    And I press the "Update" button
+    Then I should see the message "Invalid Product: product_id or condition should not be updated"
