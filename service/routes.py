@@ -45,7 +45,7 @@ def list_inventories():
     inventories = []
 
     req_dict = request.args
-    app.logger.info(len(req_dict))
+    app.logger.info(req_dict)
 
     if len(req_dict) == 0:
         inventories = Inventory.all()

@@ -206,8 +206,9 @@ class Inventory(db.Model, PersistentBase):
         :param data: A dictionary containing the resource data
         :type data: dict
         """
-        condition = data["condition"] if isinstance(data["condition"], int) else Condition[data["condition"]].value
-        if self.product_id != data["product_id"] or \
+        condition = str(data["condition"])
+        condition = Condition(int(condition)) if condition.isnumeric() else Condition[condition]
+        if self.product_id != int(data["product_id"]) or \
            self.condition != condition:
             raise DataValidationError(
                 "Invalid Product: product_id or "
@@ -255,14 +256,15 @@ class Inventory(db.Model, PersistentBase):
             value = req_dict.get(attr)
             if value:
                 try:
+                    value = str(value)
                     if attr == 'condition':
-                        value = Condition(int(value))
+                        value = Condition(int(value)) if value.isnumeric() else Condition[value]
                     elif attr == 'restock_level':
-                        value = RestockLevel(int(value))
+                        value = RestockLevel(int(value)) if value.isnumeric() else RestockLevel[value]
                     else:
                         value = int(value)
                     filter_list.append(getattr(cls, attr) == value)
-                except ValueError:
+                except (ValueError, KeyError):
                     app.logger.info('Ignore invalid %s: %s', attr, value)
 
         return cls.query.filter(*filter_list)
