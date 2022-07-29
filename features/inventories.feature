@@ -56,7 +56,8 @@ Scenario: Update an Inventory
     When I select "USED" in the "Condition" dropdown
     And I press the "Update" button
     Then I should see the message "Invalid Product: product_id or condition should not be updated"
-    When I paste the "Inventory ID" field
+    When I press the "Clear" button
+    And I paste the "Inventory ID" field
     And I press the "Retrieve" button
     Then I should see the message "Success"
     And I should see "1" in the "Product Id" field
