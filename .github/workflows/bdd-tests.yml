@@ -42,7 +42,6 @@ jobs:
         run: |
           apt-get update
           apt-get install -y gcc libpq-dev
-          apt-get install -y chromium-driver 
 
       - name: Install Python packages
         run: |
