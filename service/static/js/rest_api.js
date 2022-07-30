@@ -203,7 +203,7 @@ $(function () {
             }
         }
 
-        if (quantity) {
+        if (restock_level) {
             if (queryString.length > 0) {
                 queryString += '&restock_level=' + restock_level
             } else {

@@ -25,6 +25,20 @@ Scenario: List all inventories
     And I should see "2" "NEW" "3" and "MODERATE" in the "3rd" row of the results
     And I should see "3" "USED" "4" and "PLENTY" in the "4th" row of the results
 
+Scenario: Query/Filter the inventory
+    When I visit the "Home Page"
+    And I select "NEW" in the "Condition" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "1" "NEW" "1" and "LOW" in the "1st" row of the results
+    And I should see "2" "NEW" "3" and "MODERATE" in the "2rd" row of the results
+    When I press the "Clear" button
+    And I select "MODERATE" in the "Restock Level" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "1" "OPEN_BOX" "2" and "MODERATE" in the "1st" row of the results
+    And I should see "2" "NEW" "3" and "MODERATE" in the "2st" row of the results
+
 Scenario: Update an Inventory
     When I visit the "Home Page"
     And I set the "Product Id" to "1"
@@ -62,5 +76,7 @@ Scenario: Update an Inventory
     Then I should see the message "Success"
     And I should see "1" in the "Product Id" field
     And I should see "NEW" in the "Condition" dropdown
+
+
 
 
