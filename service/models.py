@@ -72,14 +72,19 @@ class PersistentBase:
             db.session.rollback()
             if "duplicate key value violates unique constraint" in error:
                 raise DuplicateKeyValueError(
-                    "duplicate key value violates unique "
-                    "constraint unique_constraint_product_id_condition"
+                    # "duplicate key value violates unique "
+                    # "constraint unique_constraint_product_id_condition"
+                    "Can not re-create the inventory as there exists "
+                    "one with a same product_id & condition"
                 )
         except (DataError, StatementError) as data_error:
             db.session.rollback()
             raise DataValidationError(
-                "Invalid Product: body of request contained bad or no data"
-                + str(data_error.args[0])
+                # "Invalid Product: body of request contained bad or no data"
+                # + str(data_error.args[0])
+                "Fail to create the inventory due to "
+                "incomplete inventory information or "
+                "wrong field format"
             ) from data_error
 
     def update(self):
