@@ -22,6 +22,7 @@ from service.models import DataValidationError, DuplicateKeyValueError
 from service import app
 from . import status
 
+
 ######################################################################
 # Error Handlers
 ######################################################################

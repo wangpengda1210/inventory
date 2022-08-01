@@ -18,6 +18,7 @@ from .utils import status  # HTTP Status Codes
 # Import Flask application
 from . import app
 
+
 ######################################################################
 # GET INDEX
 ######################################################################
@@ -34,6 +35,7 @@ def index():
     #     status.HTTP_200_OK,
     # )
     return app.send_static_file("index.html")
+
 
 ######################################################################
 # LIST ALL INVENTORIES
@@ -195,13 +197,14 @@ def update_inventory_by_product_id_condition():
             f"Inventory with product_id '{req_product_id}' & "
             f"condition '{req_condition}' was not found.",
         )
-    assert(len(inventories) == 1)
+    assert (len(inventories) == 1)
     app.logger.info("%s", type(inventories))
     inventory = inventories[0]
     # inventory.deserialize(request_dict)
     # inventory.update()
     inventory.update(request_dict)
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+
 
 ############################################################
 # Health Endpoint

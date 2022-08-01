@@ -31,4 +31,5 @@ def step_impl(context):
             "restock_level": row['restock_level'],
         }
         context.resp = requests.post(rest_endpoint, json=payload)
+        context.clipboard = context.resp.json()['inventory_id']
         expect(context.resp.status_code).to_equal(201)
