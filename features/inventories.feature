@@ -19,7 +19,8 @@ Scenario: The server is running
 Scenario: List all inventories 
     When I visit the "Home Page"
     And I press the "Search" button
-    Then I should see the message "Success"                                                                                                                                                                                                                                                                                                      
+    Then I should see the message "Success"
+    And I should see "4" rows in the results
     And I should see "1" "NEW" "1" and "LOW" in the "1st" row of the results
     And I should see "1" "OPEN_BOX" "2" and "MODERATE" in the "2nd" row of the results
     And I should see "2" "NEW" "3" and "MODERATE" in the "3rd" row of the results
@@ -60,6 +61,7 @@ Scenario: Create a New inventory
     When I press the "Clear" button
     And I press the "Search" button
     Then I should see the message "Success"
+    And I should see "5" rows in the results
     And I should see "4" "NEW" "5" and "MODERATE" in the "5st" row of the results
 
 Scenario: Query/Filter the inventory
@@ -67,12 +69,14 @@ Scenario: Query/Filter the inventory
     And I select "NEW" in the "Condition" dropdown
     And I press the "Search" button
     Then I should see the message "Success"
+    And I should see "2" rows in the results
     And I should see "1" "NEW" "1" and "LOW" in the "1st" row of the results
     And I should see "2" "NEW" "3" and "MODERATE" in the "2rd" row of the results
     When I press the "Clear" button
     And I select "MODERATE" in the "Restock Level" dropdown
     And I press the "Search" button
     Then I should see the message "Success"
+    And I should see "2" rows in the results
     And I should see "1" "OPEN_BOX" "2" and "MODERATE" in the "1st" row of the results
     And I should see "2" "NEW" "3" and "MODERATE" in the "2st" row of the results
 
@@ -132,5 +136,17 @@ Scenario: Update an Inventory
     And I should see "NEW" in the "Condition" dropdown
 
 
-
-
+Scenario: Delete all inventories
+    When I visit the "Home Page"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "4" rows in the results
+    And I should see "1" "NEW" "1" and "LOW" in the "1st" row of the results
+    And I should see "1" "OPEN_BOX" "2" and "MODERATE" in the "2nd" row of the results
+    And I should see "2" "NEW" "3" and "MODERATE" in the "3rd" row of the results
+    And I should see "3" "USED" "4" and "PLENTY" in the "4th" row of the results
+    When I press the "Delete All" button
+    Then I should see the message "All Inventories have been deleted!"
+    When I press the "Search" button
+    Then I should see the message "Success"
+    And I should not see anything in the results

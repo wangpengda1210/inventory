@@ -92,7 +92,7 @@ def step_impl(context, element_name):
 
 @when('I press the "{button}" button')
 def step_impl(context, button):
-    button_id = button.lower() + '-btn'
+    button_id = button.replace(' ', '').lower() + '-btn'
     context.driver.find_element_by_id(button_id).click()
 
 @then('I should see "{product_id}" "{condition}" "{quantity}" and "{restock_level}" in the "{row_number}" row of the results')
@@ -103,6 +103,15 @@ def step_impl(context, product_id, condition, quantity, restock_level, row_numbe
     result = element[0].text.split()[1:] # convert element to string and drop the ID field  [425 1 NEW 1 LOW]==> [1 NEW 1 LOW]
     expect(result) == expected_result # compare
 
+@then('I should see "{num}" rows in the results')
+def step_impl(context, num):
+    table_content = context.driver.find_elements_by_xpath(f"//table[@class='table table-striped']/tbody")
+    expect(len(table_content)).value == int(num)
+
+@then('I should not see anything in the results')
+def step_impl(context):
+    table_content = context.driver.find_elements_by_xpath(f"//table[@class='table table-striped']/tbody")
+    expect(len(table_content)).value == 0
 
 # @then('I should see "{name}" in the results')
 # def step_impl(context, name):
