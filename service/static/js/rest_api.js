@@ -154,11 +154,37 @@ $(function () {
 
         ajax.done(function(res){
             clear_form_data()
-            flash_message("Inventory has been Deleted!")
+            flash_message("Inventory has been deleted!")
         });
 
         ajax.fail(function(res){
             flash_message("Server error!")
+        });
+    });
+
+    // ****************************************
+    // Delete all Inventories (Action)
+    // ****************************************
+
+    $("#deleteall-btn").click(function () {
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "DELETE",
+            url: `/inventories/clear`,
+            contentType: "application/json",
+            data: ''
+        })
+
+        ajax.done(function(res){
+            clear_form_data()
+            $("#search_results").empty();
+            flash_message("All Inventories have been deleted!")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
         });
     });
 
