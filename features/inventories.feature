@@ -76,6 +76,23 @@ Scenario: Query/Filter the inventory
     And I should see "1" "OPEN_BOX" "2" and "MODERATE" in the "1st" row of the results
     And I should see "2" "NEW" "3" and "MODERATE" in the "2st" row of the results
 
+Scenario: Read a inventory
+    When I visit the "Home Page"
+    And I paste the "Inventory ID" field
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "3" in the "Product Id" field
+    And I should see "USED" in the "Condition" dropdown
+    And I should see "PLENTY" in the "Restock Level" dropdown
+    And I should see "4" in the "Quantity" field
+    When I press the "Clear" button
+    And I set the "Inventory ID" to "10000"
+    And I press the "Retrieve" button
+    Then I should see the message "404 Not Found: Inventory with id '10000' could not be found."
+    When I press the "Clear" button
+    And I press the "Retrieve" button
+    Then I should see the message "404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again."
+
 Scenario: Update an Inventory
     When I visit the "Home Page"
     And I set the "Product Id" to "1"
