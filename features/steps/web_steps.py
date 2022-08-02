@@ -139,6 +139,16 @@ def step_impl(context, message):
     )
     expect(found).to_be(True)
 
+@then('I should see the message containing "{message}"')
+def step_impl(context, message):
+    found = WebDriverWait(context.driver, context.WAIT_SECONDS).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'flash_message'),
+            message
+        )
+    )
+    expect(found).to_be(True)
+
 # ##################################################################
 # # This code works because of the following naming convention:
 # # The id field for text input in the html is the element name
