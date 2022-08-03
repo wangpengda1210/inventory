@@ -26,6 +26,8 @@ Scenario: List all inventories
     And I should see "2" "NEW" "3" and "MODERATE" in the "3rd" row of the results
     And I should see "3" "USED" "4" and "PLENTY" in the "4th" row of the results
 
+
+
 Scenario: Create a New inventory
     When I visit the "Home Page"
     And I set the "Product Id" to "badformat"
@@ -183,3 +185,20 @@ Scenario: Delete all inventories
     When I press the "Search" button
     Then I should see the message "Success"
     And I should not see anything in the results
+
+Scenario: Delete an inventory
+    When I visit the "Home Page" 
+    And I set the "Product_id" to "1"
+    And I select "NEW" in the "Condition" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "1" in the "Product Id" field
+    And I should see "NEW" in the "Condition" dropdown
+    And I should see "LOW" in the "Restock Level" dropdown
+    When I copy the "Inventory_id" field
+    When I press the "Delete" button
+    Then I should see the message "Inventory has been deleted!"
+
+    When I paste the "Inventory_id" field
+    And I press the "Retrieve" button
+    Then I should see the message containing "404 Not Found"
