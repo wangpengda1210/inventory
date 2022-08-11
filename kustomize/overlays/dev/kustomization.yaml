@@ -18,4 +18,4 @@ patches:
 images:
   - name: inventory-cloud-cf
     newName: us.icr.io/dev_inventory/inventory-cloud-cf
-    newTag: "1.0"
+    # newTag: "1.0"
