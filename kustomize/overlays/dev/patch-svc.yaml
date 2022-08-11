@@ -9,4 +9,21 @@ spec:
     - name: http
       protocol: TCP
       port: 8080
+      targetPort: 8080
       nodePort: 31001
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: inventory-cloud-cf
+# spec:
+#   selector:
+#     app: inventory-cloud-cf
+#   type: NodePort
+#   internalTrafficPolicy: Local
+#   ports:
+#     - name: http
+#       protocol: TCP
+#       port: 8080
+#       nodePort: 31000
+#       targetPort: 8080
