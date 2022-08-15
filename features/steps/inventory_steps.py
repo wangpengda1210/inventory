@@ -16,7 +16,8 @@ def step_impl(context):
     """ Delete all Inventories and load new ones """
     # List all of the Inventories and delete them one by one
     rest_endpoint = f"{context.BASE_URL}/inventories"
-    context.resp = requests.get(rest_endpoint)
+    rest_endpoint_new = f"{context.BASE_URL}/api/inventories"
+    context.resp = requests.get(rest_endpoint_new)
     expect(context.resp.status_code).to_equal(200)
     for inventory in context.resp.json():
         context.resp = requests.delete(f"{rest_endpoint}/{inventory['inventory_id']}")

@@ -18,6 +18,7 @@ DATABASE_URI = os.getenv(
 )
 
 BASE_URL = "/inventories"
+BASE_URL_NEW = "/api/inventories"
 
 
 ######################################################################
@@ -111,7 +112,7 @@ class TestInventoryServer(TestCase):
     def test_list_inventory_list(self):
         """It should Get a list of Inventories"""
         # when no data, return []
-        resp = self.client.get(BASE_URL)
+        resp = self.client.get(BASE_URL_NEW)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data, [], "wrong response")
@@ -124,7 +125,7 @@ class TestInventoryServer(TestCase):
             # self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
             if resp.status_code == status.HTTP_201_CREATED:
                 successful_create_count += 1
-        resp = self.client.get(BASE_URL)
+        resp = self.client.get(BASE_URL_NEW)
         data = resp.get_json()
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(len(data), successful_create_count)
@@ -149,21 +150,21 @@ class TestInventoryServer(TestCase):
 
         # Test single query param
         resp = self.client.get(
-            BASE_URL + "?product_id=" + str(query_product_id))
+            BASE_URL_NEW + "?product_id=" + str(query_product_id))
         data = resp.get_json()
         self.assertEqual(len(data), 3)
 
         resp = self.client.get(
-            BASE_URL + "?quantity=" + str(query_quantity + 1))
+            BASE_URL_NEW + "?quantity=" + str(query_quantity + 1))
         data = resp.get_json()
         self.assertEqual(len(data), 5)
 
-        resp = self.client.get(BASE_URL + "?condition=1")
+        resp = self.client.get(BASE_URL_NEW + "?condition=NEW")
         data = resp.get_json()
         self.assertEqual(len(data), 2)
 
         # Test multiple query param
-        resp = self.client.get(BASE_URL + "?quantity=" + str(query_quantity)
+        resp = self.client.get(BASE_URL_NEW + "?quantity=" + str(query_quantity)
                                + "&product_id=" + str(query_product_id)
                                + "&restock_level=" + str(query_restock_level)
                                + "&condition=1")
@@ -172,13 +173,7 @@ class TestInventoryServer(TestCase):
         self.assertEqual(len(data), 1)
 
         # Should ignore invalid attributes
-        resp = self.client.get(BASE_URL + "?not_a_attr=2")
-        data = resp.get_json()
-        self.assertEqual(len(data), 6)
-
-        # Should ignore illegal values
-        resp = self.client.get(
-            BASE_URL + "?quantity=a&product_id=b&restock_level=c&condition=0")
+        resp = self.client.get(BASE_URL_NEW + "?not_a_attr=2")
         data = resp.get_json()
         self.assertEqual(len(data), 6)
 
@@ -260,7 +255,7 @@ class TestInventoryServer(TestCase):
         resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
-        resp = self.client.get(BASE_URL)
+        resp = self.client.get(BASE_URL_NEW)
         data = resp.get_json()
         # print(data)
         self.assertEqual(data, [])
@@ -279,7 +274,7 @@ class TestInventoryServer(TestCase):
         resp = self.client.delete(BASE_URL + "/clear")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
-        resp = self.client.get(BASE_URL)
+        resp = self.client.get(BASE_URL_NEW)
         data = resp.get_json()
         self.assertEqual(data, [])
 
@@ -310,6 +305,13 @@ class TestInventoryServer(TestCase):
     ######################################################################
     #  T E S T   S A D   P A T H S
     ######################################################################
+
+    def test_list_inventory_with_query_illegal_value(self):
+        """It should return 400 with illegal query values"""
+        resp = self.client.get(
+            BASE_URL_NEW + "?quantity=ab&product_id=b&restock_level=c&condition=0")
+
+        self.assertEqual(resp.status_code, 400)
 
     def test_create_inventory_no_data(self):
         """It should not Create an Inventory with missing data"""

@@ -7,12 +7,25 @@ and SQL database
 import sys
 import logging  # noqa: F401 E402
 from flask import Flask
+from flask_restx import Api
 from .utils import log_handlers
 from service import config
 
 # Create Flask application
 app = Flask(__name__)
 app.config.from_object(config)
+
+app.url_map.strict_slashes = False
+
+api = Api(app,
+          version="1.0.0",
+          title="Inventory REST API Service",
+          description="This is a sample inventory API server",
+          default="inventories",
+          default_label="Inventory item operations",
+          doc="/apidocs",
+          prefix="/api"
+          )
 
 
 # Dependencies require we import the routes AFTER the Flask app is created

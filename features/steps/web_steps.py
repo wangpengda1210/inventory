@@ -162,7 +162,7 @@ def step_impl(context, text_string, element_name):
     found = WebDriverWait(context.driver, context.WAIT_SECONDS).until(
         expected_conditions.text_to_be_present_in_element_value(
             (By.ID, element_id),
-            text_string
+            text_string.strip()
         )
     )
     expect(found).to_be(True)

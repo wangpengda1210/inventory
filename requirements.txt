@@ -1,8 +1,9 @@
 # Werkzeug is famous for breaking Flask so pin down a known working version
-Werkzeug==2.1.1
+Werkzeug==2.0.3
 
 # Build dependencies
 Flask==2.1.1
+Flask-RESTX==0.5.1
 Flask-SQLAlchemy==2.5.1
 psycopg2==2.9.3
 python-dotenv==0.20.0
