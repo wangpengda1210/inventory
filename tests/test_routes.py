@@ -228,7 +228,7 @@ class TestInventoryServer(TestCase):
         new_inventory.pop("restock_level")  # check for partial update
         logging.debug("Updated %s", new_inventory)
         resp = self.client.put(
-            f"{BASE_URL}/{inventory_id}",
+            f"{BASE_URL_NEW}/{inventory_id}",
             json=new_inventory
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -373,7 +373,7 @@ class TestInventoryServer(TestCase):
     def test_update_inventory_not_found(self):
         """It should not Update the Inventory when it is not found"""
         request_json = self._create_inventories(1)[0].serialize()
-        resp = self.client.put(f"{BASE_URL}/0", json=request_json)
+        resp = self.client.put(f"{BASE_URL_NEW}/0", json=request_json)
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_not_exist_inventory(self):
