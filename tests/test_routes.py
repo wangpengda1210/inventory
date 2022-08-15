@@ -307,7 +307,7 @@ class TestInventoryServer(TestCase):
     ######################################################################
 
     def test_list_inventory_with_query_illegal_value(self):
-        """It should return 400 with illegal query values"""
+        """It should return 400 with illegal query parameter values"""
         resp = self.client.get(
             BASE_URL_NEW + "?quantity=ab&product_id=b&restock_level=c&condition=0")
 

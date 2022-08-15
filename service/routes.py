@@ -73,27 +73,12 @@ inventory_args.add_argument('product_id', type=int, required=False, help='List i
 ######################################################################
 # LIST ALL INVENTORIES
 ######################################################################
-# @app.route("/inventories", methods=["GET"])
-# def list_inventories():
-#     """Returns all of the Inventories"""
-#     app.logger.info("Request for Inventory list")
-#     inventories = []
-
-#     req_dict = request.args
-#     app.logger.info(req_dict)
-
-#     if len(req_dict) == 0:
-#         inventories = Inventory.all()
-#     else:
-#         inventories = Inventory.find_by_attributes(req_dict)
-
-#     results = [inventory.serialize() for inventory in inventories]
-#     return make_response(jsonify(results), status.HTTP_200_OK)
 @api.route('/inventories', strict_slashes=False)
 class InventoryCollection(Resource):
     """ Handles all interaction with collections of Inventory items """
     @api.doc('list_inventories')
     @api.expect(inventory_args, validate=True)
+    @api.response(400, "Query parameters not valid")
     @api.marshal_list_with(inventory_model)
     def get(self):
         """Returns all of the Inventories"""
@@ -109,7 +94,7 @@ class InventoryCollection(Resource):
             else:
                 inventories = Inventory.find_by_attributes(req_dict)
         except Exception:
-            abort(status.HTTP_400_BAD_REQUEST, "Query arguments not valid")
+            abort(status.HTTP_400_BAD_REQUEST, "Query parameters not valid")
 
         results = [inventory.serialize() for inventory in inventories]
         return results, status.HTTP_200_OK
