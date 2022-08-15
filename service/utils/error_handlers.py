@@ -26,13 +26,13 @@ from . import status
 ######################################################################
 # Error Handlers
 ######################################################################
-@app.errorhandler(DataValidationError)
+@api.errorhandler(DataValidationError)
 def request_validation_error(error):
     """Handles Value Errors from bad data"""
     return bad_request(error)
 
 
-@app.errorhandler(DuplicateKeyValueError)
+@api.errorhandler(DuplicateKeyValueError)
 def duplicate_key_value_error(error):
     """Handles Value Errors from bad data"""
     return data_conflict(error)
