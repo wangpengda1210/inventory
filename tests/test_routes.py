@@ -262,17 +262,7 @@ class TestInventoryServer(TestCase):
 
     def test_delete_all_inventories(self):
         """It should Delete all Inventories"""
-        # # generate fake request json
-        # requests_json = self._generate_inventories_non_duplicate(3, 3)
-
-        # # create
-        # for i in range(3*3):
-        #     resp = self.client.post(BASE_URL_NEW, json=requests_json[i])
-        #     self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        
-        # delete all selected inventories
         # generate fake request json
-
         DELETE_ALL_URL = BASE_URL_NEW+"/clear"
         requests_json = self._generate_inventories_non_duplicate(2, 3)
         query_product_id = requests_json[0]['product_id']
@@ -317,7 +307,7 @@ class TestInventoryServer(TestCase):
             self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
         # Test using condition
-        target = [requests_json[0],requests_json[3]]
+        target = [requests_json[0], requests_json[3]]
         resp = self.client.delete(DELETE_ALL_URL + "?condition=NEW")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         # list all inventories
@@ -330,10 +320,10 @@ class TestInventoryServer(TestCase):
             self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
         # Test multiple query param deletion
-        resp = self.client.delete(DELETE_ALL_URL + "?quantity=" + str(query_quantity)
-                               + "&product_id=" + str(query_product_id)
-                               + "&restock_level=" + str(query_restock_level)
-                               + "&condition=1")
+        resp = self.client.delete(DELETE_ALL_URL + "?quantity=" + str(query_quantity) 
+                                + "&product_id=" + str(query_product_id)
+                                + "&restock_level=" + str(query_restock_level)
+                                + "&condition=1")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         # list all inventories
         resp = self.client.get(BASE_URL_NEW)
