@@ -178,19 +178,51 @@ $(function () {
 
     $("#deleteall-btn").click(function () {
 
+        let product_id = $("#inventory_product_id").val();
+        let condition = $("#inventory_condition").val();
+        let quantity = $("#inventory_quantity").val();
+        let restock_level = $("#inventory_restock_level").val();
+
+        let queryString = ""
+
+        if (product_id) {
+            queryString += 'product_id=' + product_id
+        }
+        if (condition) {
+            if (queryString.length > 0) {
+                queryString += '&condition=' + condition
+            } else {
+                queryString += 'condition=' + condition
+            }
+        }
+        if (quantity) {
+            if (queryString.length > 0) {
+                queryString += '&quantity=' + quantity
+            } else {
+                queryString += 'quantity=' + quantity
+            }
+        }
+
+        if (restock_level) {
+            if (queryString.length > 0) {
+                queryString += '&restock_level=' + restock_level
+            } else {
+                queryString += 'restock_level=' + restock_level
+            }
+        }
+
         $("#flash_message").empty();
 
         let ajax = $.ajax({
             type: "DELETE",
-            url: `/inventories/clear`,
-            contentType: "application/json",
+            url: `/api/inventories/clear?${queryString}`,
             data: ''
         })
 
         ajax.done(function(res){
             clear_form_data()
             $("#search_results").empty();
-            flash_message("All Inventories have been deleted!")
+            flash_message("Inventories have been deleted!")
         });
 
         ajax.fail(function(res){
