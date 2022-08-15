@@ -19,7 +19,7 @@ Module: error_handlers
 """
 from flask import jsonify
 from service.models import DataValidationError, DuplicateKeyValueError
-from service import app
+from service import app, api
 from . import status
 
 
