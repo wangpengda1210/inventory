@@ -77,6 +77,37 @@ class InventoryResource(Resource):
     """
 
     # ------------------------------------------------------------------
+    # UPDATE AN EXISTING INVENTORY
+    # ------------------------------------------------------------------
+    @api.doc('update_inventories')
+    @api.response(404, 'Inventory not found')
+    @api.response(400, 'The posted Inventory data was not valid')
+    @api.expect(inventory_model)
+    @api.marshal_with(inventory_model)
+    def put(self, inventory_id):
+        """
+        Update an Inventory
+
+        This endpoint will update an Inventory based the body that is posted
+        """
+        app.logger.info("Request to update inventory with id: %s", inventory_id)
+        check_content_type("application/json")
+
+        inventory = Inventory.find(inventory_id)
+        if not inventory:
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"Inventory with id '{inventory_id}' was not found.",
+            )
+        # inventory.deserialize(request.get_json())
+        # inventory.id = inventory_id
+        # inventory.update()
+        app.logger.debug('Payload = %s', api.payload)
+        data = api.payload
+        inventory.update(data)
+        return inventory.serialize(), status.HTTP_200_OK
+
+    # ------------------------------------------------------------------
     # DELETE AN INVENTORY
     # ------------------------------------------------------------------
     @api.doc('delete_inventories')
@@ -209,27 +240,27 @@ def get_inventory(inventory_id):
 # # ######################################################################
 # # # UPDATE AN EXISTING INVENTORY  (#story 10)
 # # ######################################################################
-@app.route("/inventories/<int:inventory_id>", methods=["PUT"])
-def update_inventory(inventory_id):
-    """
-    Update an Inventory
+# @app.route("/inventories/<int:inventory_id>", methods=["PUT"])
+# def update_inventory(inventory_id):
+#     """
+#     Update an Inventory
 
-    This endpoint will update an Inventory based the body that is posted
-    """
-    app.logger.info("Request to update inventory with id: %s", inventory_id)
-    check_content_type("application/json")
+#     This endpoint will update an Inventory based the body that is posted
+#     """
+#     app.logger.info("Request to update inventory with id: %s", inventory_id)
+#     check_content_type("application/json")
 
-    inventory = Inventory.find(inventory_id)
-    if not inventory:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f"Inventory with id '{inventory_id}' was not found.",
-        )
-    # inventory.deserialize(request.get_json())
-    # inventory.id = inventory_id
-    # inventory.update()
-    inventory.update(request.get_json())
-    return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
+#     inventory = Inventory.find(inventory_id)
+#     if not inventory:
+#         abort(
+#             status.HTTP_404_NOT_FOUND,
+#             f"Inventory with id '{inventory_id}' was not found.",
+#         )
+#     # inventory.deserialize(request.get_json())
+#     # inventory.id = inventory_id
+#     # inventory.update()
+#     inventory.update(request.get_json())
+#     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
 
 ######################################################################
 # UPDATE QUANTITY UNDER PRODUCT_ID & CONDITION (Action)
