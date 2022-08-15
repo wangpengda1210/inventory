@@ -30,36 +30,6 @@ Scenario: List all inventories
 
 Scenario: Create a New inventory
     When I visit the "Home Page"
-    And I set the "Product Id" to "badformat"
-    And I select "NEW" in the "Condition" dropdown
-    And I set the "Quantity" to "5"
-    And I select "MODERATE" in the "Restock Level" dropdown
-    And I press the "Create" button
-    Then I should see the message "Fail to create the inventory due to incomplete inventory information or wrong field format"
-
-    When I press the "Clear" button
-    And I set the "Product Id" to "4"
-    And I select "NEW" in the "Condition" dropdown
-    And I set the "Quantity" to "badformat"
-    And I select "MODERATE" in the "Restock Level" dropdown
-    And I press the "Create" button
-    Then I should see the message "Fail to create the inventory due to incomplete inventory information or wrong field format"
-
-    When I press the "Clear" button
-    And I select "NEW" in the "Condition" dropdown
-    And I set the "Quantity" to "5"
-    And I select "MODERATE" in the "Restock Level" dropdown
-    And I press the "Create" button
-    Then I should see the message "Fail to create the inventory due to incomplete inventory information or wrong field format"
-
-    When I press the "Clear" button
-    And I set the "Product Id" to "4"
-    And I select "NEW" in the "Condition" dropdown
-    And I select "MODERATE" in the "Restock Level" dropdown
-    And I press the "Create" button
-    Then I should see the message "Fail to create the inventory due to incomplete inventory information or wrong field format"
-
-    When I press the "Clear" button
     And I set the "Product Id" to "4"
     And I select "NEW" in the "Condition" dropdown
     And I set the "Quantity" to "5"
