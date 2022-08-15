@@ -78,7 +78,7 @@ Scenario: Create a New inventory
     And I should see "MODERATE" in the "Restock Level" dropdown
     When I set the "Quantity" to "6"
     And I press the "Create" button
-    Then I should see the message "Can not re-create the inventory as there exists one with a same product_id & condition"
+    Then I should see the message "Re-creating inventory with an existing product_id & condition"
 
     When I copy the "Inventory ID" field
     And I press the "Clear" button
@@ -91,7 +91,7 @@ Scenario: Create a New inventory
     And I should see "MODERATE" in the "Restock Level" dropdown
     When I select "PLENTY" in the "Restock Level" dropdown
     And I press the "Create" button
-    Then I should see the message "Can not re-create the inventory as there exists one with a same product_id & condition"
+    Then I should see the message "Re-creating inventory with an existing product_id & condition"
 
     When I press the "Clear" button
     And I press the "Search" button

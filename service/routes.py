@@ -12,7 +12,7 @@ Describe what your service does here
 # # IMPORT DEPENDENCIES
 # ######################################################################
 
-from flask import jsonify, request, url_for, make_response, abort
+from flask import jsonify, request, make_response, abort
 from flask_restx import Resource, fields, reqparse
 from service.models import Inventory, RestockLevel, Condition
 from .utils import status  # HTTP Status Codes
@@ -27,14 +27,6 @@ from . import app, api
 def index():
     """Root URL response"""
     app.logger.info("Request for Root URL")
-    # return (
-    #     jsonify(
-    #         name="Inventory REST API Service",
-    #         version="1.0",
-    #         paths=url_for("list_inventories", _external=True),
-    #     ),
-    #     status.HTTP_200_OK,
-    # )
     return app.send_static_file("index.html")
 
 
@@ -71,11 +63,28 @@ inventory_args.add_argument('product_id', type=int, required=False, help='List i
 
 
 ######################################################################
-# LIST ALL INVENTORIES
+#  PATH: /inventories/{inventory_id}
+######################################################################
+@api.route('/inventories/<inventory_id>')
+@api.param('inventory_id', 'The Inventory identifier')
+class InventoryResource(Resource):
+    """
+    InventoryResource class
+    Allows the manipulation of a single Inventory
+    GET /inventories/{inventory_id} - Returns a Inventory with the inventory_id
+    PUT /inventories/{inventory_id} - Update a Inventory with the inventory_id
+    DELETE /inventories/{inventory_id} - Deletes a Inventory with the inventory_id
+    """
+
+######################################################################
+#  PATH: /inventories
 ######################################################################
 @api.route('/inventories', strict_slashes=False)
 class InventoryCollection(Resource):
     """ Handles all interaction with collections of Inventory items """
+    # ------------------------------------------------------------------
+    # LIST ALL INVENTORIES
+    # ------------------------------------------------------------------
     @api.doc('list_inventories')
     @api.expect(inventory_args, validate=True)
     @api.response(400, "Query parameters not valid")
@@ -99,6 +108,34 @@ class InventoryCollection(Resource):
         results = [inventory.serialize() for inventory in inventories]
         return results, status.HTTP_200_OK
 
+    # ------------------------------------------------------------------
+    # ADD A NEW INVENTORY
+    # ------------------------------------------------------------------
+    @api.doc('create_inventories')
+    @api.response(400, 'The posted data was not valid')
+    @api.response(409, "Re-creating inventory with an existing product_id & condition")
+    @api.expect(create_model)
+    @api.marshal_with(inventory_model, code=201)
+    def post(self):
+        """
+        Creates an Inventory
+        This endpoint will create an inventory
+        based on the data in the body that is posted
+        """
+        app.logger.info("Request to create an Inventory")
+        inventory = Inventory()
+        app.logger.info("Payload = %s", api.payload)
+        inventory.deserialize(api.payload)
+        inventory.create()
+
+        app.logger.info("Inventory [%s] created.", inventory.inventory_id)
+
+        location_url = api.url_for(
+            InventoryResource, inventory_id=inventory.inventory_id, _external=True
+        )
+
+        return inventory.serialize(), status.HTTP_201_CREATED, {'Location': location_url}
+
 
 ######################################################################
 # RETRIEVE AN INVENTORY   (#story 4)
@@ -119,35 +156,6 @@ def get_inventory(inventory_id):
         )
 
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
-
-
-#####################################################################
-# CREATE A NEW INVENTORY (#story 8)
-#####################################################################
-@app.route("/inventories", methods=["POST"])
-def create_inventories():  # noqa: C901
-    """
-    Creates an Inventory
-    This endpoint will create an inventory
-    based on the data in the body that is posted
-    """
-    app.logger.info("Request to create an Inventory")
-    check_content_type("application/json")
-
-    inventory = Inventory()
-    inventory.deserialize(request.get_json())
-    inventory.create()
-
-    app.logger.info("Inventory [%s] created.", inventory.inventory_id)
-
-    message = inventory.serialize()
-    location_url = url_for(
-        "create_inventories", inventory_id=inventory.inventory_id, _external=True
-    )
-
-    return make_response(
-        jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
-    )
 
 
 # # ######################################################################
