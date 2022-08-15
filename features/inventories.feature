@@ -26,8 +26,6 @@ Scenario: List all inventories
     And I should see "2" "NEW" "3" and "MODERATE" in the "3rd" row of the results
     And I should see "3" "USED" "4" and "PLENTY" in the "4th" row of the results
 
-
-
 Scenario: Create a New inventory
     When I visit the "Home Page"
     And I set the "Product Id" to "4"
@@ -125,8 +123,31 @@ Scenario: Delete all inventories
     And I should see "1" "OPEN_BOX" "2" and "MODERATE" in the "2nd" row of the results
     And I should see "2" "NEW" "3" and "MODERATE" in the "3rd" row of the results
     And I should see "3" "USED" "4" and "PLENTY" in the "4th" row of the results
+
+    When I press the "Clear" button
+    And I set the "Product_id" to "1"
+    And I select "OPEN BOX" in the "Condition" dropdown
     When I press the "Delete All" button
-    Then I should see the message "All Inventories have been deleted!"
+    Then I should see the message "Inventories have been deleted!"
+    When I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "3" rows in the results
+    And I should see "1" "NEW" "1" and "LOW" in the "1st" row of the results
+    And I should see "2" "NEW" "3" and "MODERATE" in the "2nd" row of the results
+    And I should see "3" "USED" "4" and "PLENTY" in the "3rd" row of the results
+
+    When I press the "Clear" button
+    And I select "NEW" in the "Condition" dropdown
+    When I press the "Delete All" button
+    Then I should see the message "Inventories have been deleted!"
+    When I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "1" rows in the results
+    And I should see "3" "USED" "4" and "PLENTY" in the "1st" row of the results
+
+    When I press the "Clear" button
+    When I press the "Delete All" button
+    Then I should see the message "Inventories have been deleted!"
     When I press the "Search" button
     Then I should see the message "Success"
     And I should not see anything in the results
