@@ -115,12 +115,22 @@ $(function () {
 
         $("#flash_message").empty();
 
-        let ajax = $.ajax({
-            type: "GET",
-            url: `/inventories/${inventory_id}`,
-            contentType: "application/json",
-            data: ''
-        })
+        let ajax;
+
+        if (inventory_id == "") {
+            ajax = $.ajax({
+                type: "GET",
+                url: `/api/inventories/${inventory_id}`,
+                data: ''
+            })
+        } else {
+            ajax = $.ajax({
+                type: "GET",
+                url: `/inventories/${inventory_id}`,
+                contentType: "application/json",
+                data: ''
+            })
+        }
 
         ajax.done(function(res){
             //alert(res.toSource())
@@ -241,8 +251,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/inventories?${queryString}`,
-            contentType: "application/json",
+            url: `/api/inventories?${queryString}`,
             data: ''
         })
 

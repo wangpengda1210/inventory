@@ -130,7 +130,8 @@ Scenario: Read a inventory
     Then I should see the message "404 Not Found: Inventory with id '10000' could not be found."
     When I press the "Clear" button
     And I press the "Retrieve" button
-    Then I should see the message "404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again."
+    Then I should see " " in the "Product Id" field
+    And I should see " " in the "Quantity" field
 
 Scenario: Update an Inventory
     When I visit the "Home Page"
