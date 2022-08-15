@@ -30,68 +30,12 @@ Scenario: List all inventories
 
 Scenario: Create a New inventory
     When I visit the "Home Page"
-    And I set the "Product Id" to "badformat"
-    And I select "NEW" in the "Condition" dropdown
-    And I set the "Quantity" to "5"
-    And I select "MODERATE" in the "Restock Level" dropdown
-    And I press the "Create" button
-    Then I should see the message "Fail to create the inventory due to incomplete inventory information or wrong field format"
-
-    When I press the "Clear" button
-    And I set the "Product Id" to "4"
-    And I select "NEW" in the "Condition" dropdown
-    And I set the "Quantity" to "badformat"
-    And I select "MODERATE" in the "Restock Level" dropdown
-    And I press the "Create" button
-    Then I should see the message "Fail to create the inventory due to incomplete inventory information or wrong field format"
-
-    When I press the "Clear" button
-    And I select "NEW" in the "Condition" dropdown
-    And I set the "Quantity" to "5"
-    And I select "MODERATE" in the "Restock Level" dropdown
-    And I press the "Create" button
-    Then I should see the message "Fail to create the inventory due to incomplete inventory information or wrong field format"
-
-    When I press the "Clear" button
-    And I set the "Product Id" to "4"
-    And I select "NEW" in the "Condition" dropdown
-    And I select "MODERATE" in the "Restock Level" dropdown
-    And I press the "Create" button
-    Then I should see the message "Fail to create the inventory due to incomplete inventory information or wrong field format"
-
-    When I press the "Clear" button
     And I set the "Product Id" to "4"
     And I select "NEW" in the "Condition" dropdown
     And I set the "Quantity" to "5"
     And I select "MODERATE" in the "Restock Level" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
-
-    When I copy the "Inventory ID" field
-    And I press the "Clear" button
-    And I paste the "Inventory ID" field
-    And I press the "Retrieve" button
-    Then I should see the message "Success"
-    And I should see "4" in the "Product Id" field
-    And I should see "NEW" in the "Condition" dropdown
-    And I should see "5" in the "Quantity" field
-    And I should see "MODERATE" in the "Restock Level" dropdown
-    When I set the "Quantity" to "6"
-    And I press the "Create" button
-    Then I should see the message "Can not re-create the inventory as there exists one with a same product_id & condition"
-
-    When I copy the "Inventory ID" field
-    And I press the "Clear" button
-    And I paste the "Inventory ID" field
-    And I press the "Retrieve" button
-    Then I should see the message "Success"
-    And I should see "4" in the "Product Id" field
-    And I should see "NEW" in the "Condition" dropdown
-    And I should see "5" in the "Quantity" field
-    And I should see "MODERATE" in the "Restock Level" dropdown
-    When I select "PLENTY" in the "Restock Level" dropdown
-    And I press the "Create" button
-    Then I should see the message "Can not re-create the inventory as there exists one with a same product_id & condition"
 
     When I press the "Clear" button
     And I press the "Search" button

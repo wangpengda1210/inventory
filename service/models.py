@@ -74,8 +74,8 @@ class PersistentBase:
                 raise DuplicateKeyValueError(
                     # "duplicate key value violates unique "
                     # "constraint unique_constraint_product_id_condition"
-                    "Can not re-create the inventory as there exists "
-                    "one with a same product_id & condition"
+                    "Re-creating inventory with "
+                    "an existing product_id & condition"
                 )
         except (DataError, StatementError) as data_error:
             db.session.rollback()
@@ -260,17 +260,14 @@ class Inventory(db.Model, PersistentBase):
         for attr in ['condition', 'restock_level', 'quantity', 'product_id']:
             value = req_dict.get(attr)
             if value:
-                try:
-                    value = str(value)
-                    if attr == 'condition':
-                        value = Condition(int(value)) if value.isnumeric() else Condition[value]
-                    elif attr == 'restock_level':
-                        value = RestockLevel(int(value)) if value.isnumeric() else RestockLevel[value]
-                    else:
-                        value = int(value)
-                    filter_list.append(getattr(cls, attr) == value)
-                except (ValueError, KeyError):
-                    app.logger.info('Ignore invalid %s: %s', attr, value)
+                value = str(value)
+                if attr == 'condition':
+                    value = Condition(int(value)) if value.isnumeric() else Condition[value]
+                elif attr == 'restock_level':
+                    value = RestockLevel(int(value)) if value.isnumeric() else RestockLevel[value]
+                else:
+                    value = int(value)
+                filter_list.append(getattr(cls, attr) == value)
 
         return cls.query.filter(*filter_list)
 
