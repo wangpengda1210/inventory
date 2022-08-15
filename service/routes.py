@@ -76,6 +76,23 @@ class InventoryResource(Resource):
     DELETE /inventories/{inventory_id} - Deletes a Inventory with the inventory_id
     """
 
+    # ------------------------------------------------------------------
+    # DELETE AN INVENTORY
+    # ------------------------------------------------------------------
+    @api.doc('delete_inventories')
+    @api.response(204, 'Inventory deleted')
+    def delete(self, inventory_id):
+        """
+        Delete an Inventory
+        This endpoint will delete an Inventory based id specified in the path
+        """
+        app.logger.info("Request to delete inventory with id: %s", inventory_id)
+        inventory = Inventory.find(inventory_id)
+        if inventory:
+            inventory.delete()
+            app.logger.info('Inventory with id [%s] was deleted', inventory_id)
+        return '', status.HTTP_204_NO_CONTENT
+
 ######################################################################
 #  PATH: /inventories
 ######################################################################
@@ -182,22 +199,6 @@ def update_inventory(inventory_id):
     # inventory.update()
     inventory.update(request.get_json())
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
-
-
-######################################################################
-# DELETE AN INVENTORY   (#story 9)
-######################################################################
-@app.route("/inventories/<int:inventory_id>", methods=["DELETE"])
-def delete_inventory(inventory_id):
-    """
-    Delete an Inventory
-    This endpoint will delete an Inventory based id specified in the path
-    """
-    app.logger.info("Request to delete inventory with id: %s", inventory_id)
-    inventory = Inventory.find(inventory_id)
-    if inventory:
-        inventory.delete()
-    return make_response("", status.HTTP_204_NO_CONTENT)
 
 
 ######################################################################

@@ -15,9 +15,8 @@ from compare import expect
 def step_impl(context):
     """ Delete all Inventories and load new ones """
     # List all of the Inventories and delete them one by one
-    rest_endpoint = f"{context.BASE_URL}/inventories"
-    rest_endpoint_new = f"{context.BASE_URL}/api/inventories"
-    context.resp = requests.get(rest_endpoint_new)
+    rest_endpoint = f"{context.BASE_URL}/api/inventories"
+    context.resp = requests.get(rest_endpoint)
     expect(context.resp.status_code).to_equal(200)
     for inventory in context.resp.json():
         context.resp = requests.delete(f"{rest_endpoint}/{inventory['inventory_id']}")
@@ -31,6 +30,6 @@ def step_impl(context):
             "quantity": row['quantity'],
             "restock_level": row['restock_level'],
         }
-        context.resp = requests.post(rest_endpoint_new, json=payload)
+        context.resp = requests.post(rest_endpoint, json=payload)
         context.clipboard = context.resp.json()['inventory_id']
         expect(context.resp.status_code).to_equal(201)
