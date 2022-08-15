@@ -252,7 +252,7 @@ class TestInventoryServer(TestCase):
         # delete
         inventory_json = resp.get_json()
         inventory_id = inventory_json["inventory_id"]
-        resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
+        resp = self.client.delete(BASE_URL_NEW + "/" + str(inventory_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
         resp = self.client.get(BASE_URL_NEW)
@@ -380,7 +380,7 @@ class TestInventoryServer(TestCase):
         """It should return 204 when Deleting not exist inventory"""
         # delete
         inventory_id = 1
-        resp = self.client.delete(BASE_URL + "/" + str(inventory_id))
+        resp = self.client.delete(BASE_URL_NEW + "/" + str(inventory_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
         resp = self.client.delete(BASE_URL + "/clear")

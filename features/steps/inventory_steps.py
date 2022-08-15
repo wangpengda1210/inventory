@@ -20,7 +20,7 @@ def step_impl(context):
     context.resp = requests.get(rest_endpoint_new)
     expect(context.resp.status_code).to_equal(200)
     for inventory in context.resp.json():
-        context.resp = requests.delete(f"{rest_endpoint}/{inventory['inventory_id']}")
+        context.resp = requests.delete(f"{rest_endpoint_new}/{inventory['inventory_id']}")
         expect(context.resp.status_code).to_equal(204)
 
     # load the database with new pets
