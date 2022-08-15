@@ -28,14 +28,25 @@ from . import status
 ######################################################################
 @api.errorhandler(DataValidationError)
 def request_validation_error(error):
-    """Handles Value Errors from bad data"""
-    return bad_request(error)
+    message = str(error)
+    app.logger.error(message)
+    return {
+        'status_code': status.HTTP_400_BAD_REQUEST,
+        'error': 'Bad Request',
+        'message': message
+    }, status.HTTP_400_BAD_REQUEST
 
 
 @api.errorhandler(DuplicateKeyValueError)
 def duplicate_key_value_error(error):
     """Handles Value Errors from bad data"""
-    return data_conflict(error)
+    message = str(error)
+    app.logger.error(message)
+    return {
+        'status_code': status.HTTP_409_CONFLICT,
+        'error': "Conflict",
+        'message': message
+    }, status.HTTP_409_CONFLICT
 
 
 @app.errorhandler(status.HTTP_400_BAD_REQUEST)
