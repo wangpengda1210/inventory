@@ -153,6 +153,37 @@ class InventoryCollection(Resource):
 
         return inventory.serialize(), status.HTTP_201_CREATED, {'Location': location_url}
 
+######################################################################
+#  PATH: /inventories/clear
+######################################################################
+@api.route('/inventories/clear', strict_slashes=False)
+class ClearResource(Resource):
+    """ Delete all actions for Inventories """
+    @api.doc('Delete_inventories')
+    @api.expect(inventory_args, validate=True)
+    @api.response(204, 'Inventories deleted')
+    def delete(self):
+        """
+        Delete all Selected Inventories
+        This endpoint will delete all selected Inventories
+        """
+        app.logger.info("Request to delete inventories")
+        inventories = []
+
+        try:
+            req_dict = inventory_args.parse_args()
+            req_dict = {k: v for k, v in req_dict.items() if v is not None}
+            if len(req_dict) == 0:
+                inventories = Inventory.all()
+            else:
+                inventories = Inventory.find_by_attributes(req_dict)
+        except Exception:
+            pass
+
+        for inventory in inventories:
+            inventory.delete()
+            app.logger.info('Inventory with id [%s] was deleted', inventory.inventory_id)
+        return '', status.HTTP_204_NO_CONTENT
 
 ######################################################################
 # RETRIEVE AN INVENTORY   (#story 4)
@@ -199,23 +230,6 @@ def update_inventory(inventory_id):
     # inventory.update()
     inventory.update(request.get_json())
     return make_response(jsonify(inventory.serialize()), status.HTTP_200_OK)
-
-
-######################################################################
-# DELETE ALL INVENTORIES (Action)
-######################################################################
-@app.route("/inventories/clear", methods=["DELETE"])
-def delete_all_inventories():
-    """
-    Delete all Inventories
-    This endpoint will delete all Inventories
-    """
-    app.logger.info("Request to delete all inventories")
-    inventories = Inventory.all()
-    for inventory in inventories:
-        inventory.delete()
-    return make_response("", status.HTTP_204_NO_CONTENT)
-
 
 ######################################################################
 # UPDATE QUANTITY UNDER PRODUCT_ID & CONDITION (Action)

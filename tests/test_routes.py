@@ -262,16 +262,94 @@ class TestInventoryServer(TestCase):
 
     def test_delete_all_inventories(self):
         """It should Delete all Inventories"""
+        # # generate fake request json
+        # requests_json = self._generate_inventories_non_duplicate(3, 3)
+
+        # # create
+        # for i in range(3*3):
+        #     resp = self.client.post(BASE_URL_NEW, json=requests_json[i])
+        #     self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        
+        # delete all selected inventories
         # generate fake request json
-        requests_json = self._generate_inventories_non_duplicate(3, 3)
+
+        DELETE_ALL_URL = BASE_URL_NEW+"/clear"
+        requests_json = self._generate_inventories_non_duplicate(2, 3)
+        query_product_id = requests_json[0]['product_id']
+        query_quantity = requests_json[0]['quantity']
+        query_restock_level = requests_json[0]['restock_level']
+
+        for i in range(1, 2*3):
+            requests_json[i]['quantity'] = query_quantity + 1
 
         # create
-        for i in range(3*3):
+        for i in range(2*3):
             resp = self.client.post(BASE_URL_NEW, json=requests_json[i])
             self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
+        # Test single query param deletion
+        # Test using product_id
+        target = requests_json[:3]
+        resp = self.client.delete(
+            DELETE_ALL_URL + "?product_id=" + str(query_product_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        # list all inventories
+        resp = self.client.get(BASE_URL_NEW)
+        data = resp.get_json()
+        self.assertEqual(len(data), 3)
+        # create deleted inventories
+        for i in range(3):
+            resp = self.client.post(BASE_URL_NEW, json=target[i])
+            self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # Test using quantity
+        target = requests_json[1:]
+        resp = self.client.delete(
+            DELETE_ALL_URL + "?quantity=" + str(query_quantity + 1))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        # list all inventories
+        resp = self.client.get(BASE_URL_NEW)
+        data = resp.get_json()
+        self.assertEqual(len(data), 1)
+        # create deleted inventories
+        for i in range(5):
+            resp = self.client.post(BASE_URL_NEW, json=target[i])
+            self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # Test using condition
+        target = [requests_json[0],requests_json[3]]
+        resp = self.client.delete(DELETE_ALL_URL + "?condition=NEW")
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        # list all inventories
+        resp = self.client.get(BASE_URL_NEW)
+        data = resp.get_json()
+        self.assertEqual(len(data), 4)
+        # create deleted inventories
+        for i in range(2):
+            resp = self.client.post(BASE_URL_NEW, json=target[i])
+            self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # Test multiple query param deletion
+        resp = self.client.delete(DELETE_ALL_URL + "?quantity=" + str(query_quantity)
+                               + "&product_id=" + str(query_product_id)
+                               + "&restock_level=" + str(query_restock_level)
+                               + "&condition=1")
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        # list all inventories
+        resp = self.client.get(BASE_URL_NEW)
+        data = resp.get_json()
+        self.assertEqual(len(data), 5)
+
+        # Should ignore invalid attributes
+        resp = self.client.delete(DELETE_ALL_URL + "?condition=0")
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        # list all inventories
+        resp = self.client.get(BASE_URL_NEW)
+        data = resp.get_json()
+        self.assertEqual(len(data), 5)
+
         # delete all
-        resp = self.client.delete(BASE_URL + "/clear")
+        resp = self.client.delete(DELETE_ALL_URL)
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
         resp = self.client.get(BASE_URL_NEW)
@@ -383,7 +461,7 @@ class TestInventoryServer(TestCase):
         resp = self.client.delete(BASE_URL_NEW + "/" + str(inventory_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
-        resp = self.client.delete(BASE_URL + "/clear")
+        resp = self.client.delete(BASE_URL_NEW + "/clear")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_update_inventory_by_product_id_condition_not_found(self):
