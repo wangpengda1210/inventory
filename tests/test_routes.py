@@ -320,10 +320,10 @@ class TestInventoryServer(TestCase):
             self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
         # Test multiple query param deletion
-        resp = self.client.delete(DELETE_ALL_URL + "?quantity=" + str(query_quantity) 
-                                + "&product_id=" + str(query_product_id)
-                                + "&restock_level=" + str(query_restock_level)
-                                + "&condition=1")
+        resp = self.client.delete(DELETE_ALL_URL + "?quantity=" + str(query_quantity)
+                                  + "&product_id=" + str(query_product_id)
+                                  + "&restock_level=" + str(query_restock_level)
+                                  + "&condition=1")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         # list all inventories
         resp = self.client.get(BASE_URL_NEW)
